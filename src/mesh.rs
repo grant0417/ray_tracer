@@ -1,7 +1,7 @@
 use crate::hittable_list::HittableList;
 use std::path;
 use crate::triangle::Triangle;
-use crate::material::{Metal, Lambertian};
+use crate::material::{Metal, Lambertian, Material};
 use crate::vec3::Vec3;
 use std::sync::Arc;
 use crate::hittable::{Hittable, HitRecord};
@@ -12,13 +12,9 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new_from_obj(path: &str) -> Result<Self, tobj::LoadError> {
+    pub fn new_from_obj(path: &str, center: &Vec3, scale: f64, flat: bool, material: Arc<dyn Material>) -> Result<Self, tobj::LoadError> {
         let (models, materials) = tobj::load_obj(path)?;
         let mut list = HittableList::new();
-
-        let scale = 0.3;
-
-        let mat = Arc::new(Metal::new(&Vec3::new(0.0, 0.66, 0.42), 0.5));
 
         for (i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
@@ -40,17 +36,39 @@ impl Mesh {
                     mesh.positions[3 * p3i + 1] as f64,
                     mesh.positions[3 * p3i + 2] as f64);
 
-                list.add(Arc::new(Triangle::new(
-                    p1.scale(scale),
-                    p2.scale(scale),
-                    p3.scale(scale),
-                    mat.clone()
-                )))
+                if !mesh.normals.is_empty() && !flat {
+                    let n1 = Vec3::new(
+                        mesh.normals[3 * p1i] as f64,
+                        mesh.normals[3 * p1i + 1] as f64,
+                        mesh.normals[3 * p1i + 2] as f64);
+                    let n2 = Vec3::new(
+                        mesh.normals[3 * p2i] as f64,
+                        mesh.normals[3 * p2i + 1] as f64,
+                        mesh.normals[3 * p2i + 2] as f64);
+                    let n3 = Vec3::new(
+                        mesh.normals[3 * p3i] as f64,
+                        mesh.normals[3 * p3i + 1] as f64,
+                        mesh.normals[3 * p3i + 2] as f64);
+
+                    list.add(Arc::new(Triangle::new_smooth(
+                        p1.scale(scale) + *center,
+                        p2.scale(scale) + *center,
+                        p3.scale(scale) + *center,
+                        n1,
+                        n2,
+                        n3,
+                        material.clone()
+                    )))
+                } else {
+                    list.add(Arc::new(Triangle::new_flat(
+                        p1.scale(scale) + *center,
+                        p2.scale(scale) + *center,
+                        p3.scale(scale) + *center,
+                        material.clone()
+                    )))
+                }
             }
-
-
         }
-
         Ok(Mesh{list})
     }
 }

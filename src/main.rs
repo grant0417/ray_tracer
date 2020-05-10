@@ -120,10 +120,15 @@ fn book1_scene() -> HittableList {
 fn main() -> Result<(), Box<dyn Error>> {
     const IMAGE_WIDTH: usize = 1200;
     const IMAGE_HEIGHT: usize = 800;
-    const SAMPLES_PER_PIXEL: usize = 10;
+    const SAMPLES_PER_PIXEL: usize = 20;
     const MAX_DEPTH: usize = 50;
 
-    let teapot = Mesh::new_from_obj("teapot.obj")?;
+    let dragon = Mesh::new_from_obj("dragon_hq.obj", &Vec3::new(-0.7, 0.0, -1.5), 1.0, false,
+                                        Arc::new(Metal::new(&Vec3::new(0.0, 0.66, 0.42), 0.1)))?;
+
+    let teapot = Mesh::new_from_obj("teapot.obj",
+                                   &Vec3::new(0.0, 0.0, 0.0), 0.3, false,
+                                    Arc::new(Lambertian::new(&Vec3::new(0.8, 0.8, 0.8))))?;
 
     let mut world = HittableList::new();
 
@@ -133,12 +138,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         Arc::new(Lambertian::new(&Vec3::new(0.5, 0.5, 0.5))),
     )));
 
+    world.add(Arc::new(dragon));
     world.add(Arc::new(teapot));
 
     let aspect_ratio = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
     let lookfrom = Vec3::new(-3.0, 1.5, 5.0);
-    //-0.2, 0.6, 0.0
-    let lookat = Vec3::new(0.0, 0.5, 0.0);
+    let lookat = Vec3::new(-0.6, 0.6, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = (lookfrom-lookat).length();
     let aperture = 0.1;
