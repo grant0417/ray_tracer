@@ -1,9 +1,11 @@
 # Ray Tracer
 
-A basic ray tracer that was ported from [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-to Rust. Also uses Rayon to allow parallel execution of the program.
+A basic ray tracer that is based on [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+but in Rust. Also includes .obj loading and uses Rayon to allow parallel execution of the program.
 
-Here is a fancy image from the ray tracer:
+Here is are some fancy images from the ray tracer:
+  
+![Utah Teapot](imgs/utah.jpg)
   
 ![Lots of Balls](imgs/image.png)
 

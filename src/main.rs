@@ -14,12 +14,17 @@ mod util;
 use util::*;
 mod material;
 use material::*;
+mod triangle;
+use triangle::*;
+mod mesh;
+use mesh::*;
 
-use std::sync::{Arc, Mutex};
-use std::{error::Error, io, thread};
+use std::sync::{Arc};
+use std::{error::Error, io, fs};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use rayon::prelude::*;
 use std::time::Instant;
+use std::path::Path;
 
 fn ray_color<T: Hittable>(r: &Ray, world: &T, depth: usize) -> Vec3 {
     let mut rec = HitRecord::new();
@@ -44,7 +49,7 @@ fn ray_color<T: Hittable>(r: &Ray, world: &T, depth: usize) -> Vec3 {
     Vec3::new(1.0, 1.0, 1.0).scale(1.0 - t) + Vec3::new(0.5, 0.7, 1.0).scale(t)
 }
 
-fn random_scene() -> HittableList {
+fn book1_scene() -> HittableList {
     let mut world = HittableList::new();
 
     world.add(Arc::new(Sphere::new(
@@ -115,15 +120,27 @@ fn random_scene() -> HittableList {
 fn main() -> Result<(), Box<dyn Error>> {
     const IMAGE_WIDTH: usize = 1200;
     const IMAGE_HEIGHT: usize = 800;
-    const SAMPLES_PER_PIXEL: usize = 1000;
+    const SAMPLES_PER_PIXEL: usize = 10;
     const MAX_DEPTH: usize = 50;
 
-    let world = random_scene();
+    let teapot = Mesh::new_from_obj("teapot.obj")?;
+
+    let mut world = HittableList::new();
+
+    world.add(Arc::new(Sphere::new(
+        &Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new(&Vec3::new(0.5, 0.5, 0.5))),
+    )));
+
+    world.add(Arc::new(teapot));
+
     let aspect_ratio = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
-    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let lookfrom = Vec3::new(-3.0, 1.5, 5.0);
+    //-0.2, 0.6, 0.0
+    let lookat = Vec3::new(0.0, 0.5, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
+    let dist_to_focus = (lookfrom-lookat).length();
     let aperture = 0.1;
     let cam = Camera::new(
         lookfrom,

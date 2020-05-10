@@ -12,6 +12,10 @@ impl HittableList {
         HittableList { objects: vec![] }
     }
 
+    pub fn new_with_capacity(capacity: usize) -> Self {
+        HittableList { objects: Vec::with_capacity(capacity) }
+    }
+
     pub fn clear(&mut self) {
         self.objects.clear();
     }

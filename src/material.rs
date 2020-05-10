@@ -32,6 +32,7 @@ impl Material for Lambertian {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Metal {
     albedo: Vec3,
     fuzz: f64,
@@ -57,6 +58,7 @@ impl Material for Metal {
 
 pub struct Dielectric {
     ref_idx: f64,
+
 }
 
 impl Dielectric {
@@ -67,7 +69,7 @@ impl Dielectric {
 
 impl Material for Dielectric {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
-        *attenuation = Vec3::new(1.0, 1.0, 1.0);
+        *attenuation = Vec3::new(0.9, 0.9, 0.9);
         let etai_over_etat = if rec.front_face {
             1.0 / self.ref_idx
         } else {
