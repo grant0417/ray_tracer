@@ -15,28 +15,21 @@ pub struct BVHNode {
 impl BVHNode {
     pub fn new(objects: &mut Vec<Arc<dyn Hittable>>,
            start: usize, end: usize, time0: f64, time1: f64) -> Self {
-        let axis = random_int_range(0,3);
-        let comparator = if axis == 0 {
-            box_x_compare
-        } else if axis == 1 {
-            box_t_compare
-        } else {
-            box_z_compare
-        };
+        let axis = random_int_range(0,3) as usize;
 
         let object_span = end - start;
 
         let (left, right) = if object_span == 1 {
             (objects[start].clone(), objects[start].clone())
         } else if object_span == 2 {
-            if comparator(objects[start].clone(), objects[start+1].clone()) {
+            if box_compare(objects[start].clone(), objects[start+1].clone(), axis) {
                 (objects[start].clone(), objects[start+1].clone())
             } else {
                 (objects[start+1].clone(), objects[start].clone())
             }
         } else {
-            objects[start..].sort_by(|a, b| {
-                if comparator(a.clone(), b.clone()) {
+            objects[start..end].sort_by(|a, b| {
+                if box_compare(a.clone(), b.clone(), axis) {
                     Ordering::Less
                 } else {
                     Ordering::Greater
@@ -66,7 +59,8 @@ impl BVHNode {
 
     pub fn from_list(objects: &mut HittableList, time0: f64, time1: f64) -> Self {
         let len = objects.objects.len();
-        BVHNode::new(&mut objects.objects, 0, len, time0, time1)
+        let bvhnod = BVHNode::new(&mut objects.objects, 0, len, time0, time1);
+        bvhnod
     }
 }
 
@@ -99,17 +93,5 @@ fn box_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>, axis: usize) -> bool 
         eprintln!("No bounding box in BVHNode constructor.")
     }
 
-    box_a.min().e[axis] < box_b.min().e[axis]
-}
-
-fn box_x_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
-    box_compare(a, b, 0)
-}
-
-fn box_t_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
-    box_compare(a, b, 1)
-}
-
-fn box_z_compare(a: Arc<dyn Hittable>, b: Arc<dyn Hittable>) -> bool {
-    box_compare(a, b, 2)
+    box_a.min()[axis] < box_b.min()[axis]
 }

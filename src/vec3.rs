@@ -1,41 +1,43 @@
 use std::io::{Write};
-use std::ops::{AddAssign, MulAssign, Neg, Index, Add, Sub, Mul};
+use std::ops::{MulAssign, Neg, Index, Add, Sub, Mul};
 use std::io;
 use crate::util::{clamp, random_double, random_double_range};
 use std::f64;
+use nalgebra::Vector3;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3 {
-    pub e: [f64; 3],
+    pub v: Vector3<f64>
 }
 
 impl Vec3 {
 
     pub fn new(x: f64, y: f64, z: f64 ) -> Self {
-        Vec3{ e: [x, y, z] }
+        Vec3{ v: Vector3::new(x, y, z) }
     }
 
     pub fn zero() -> Self {
-        Vec3{ e: [0.0; 3] }
+        Vec3{ v: Vector3::new(0.0, 0.0, 0.0) }
     }
 
-    pub fn x(&self) -> f64 { self.e[0] }
-    pub fn y(&self) -> f64 { self.e[1] }
-    pub fn z(&self) -> f64 { self.e[2] }
+    pub fn x(&self) -> f64 { self.v[0] }
+    pub fn y(&self) -> f64 { self.v[1] }
+    pub fn z(&self) -> f64 { self.v[2] }
 
     pub fn length(&self) -> f64 {
-        self.length_squared().sqrt()
+        self.v.norm()
     }
 
     pub fn length_squared(&self) -> f64 {
-        self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+        self.v.norm_squared()
     }
 
     pub fn write_color<T: Write>(&self, writer: &mut T, samples_per_pixel: usize) -> io::Result<()> {
         let scale = 1.0 / samples_per_pixel as f64;
-        let r = (scale * self.e[0]).sqrt();
-        let g = (scale * self.e[1]).sqrt();
-        let b = (scale * self.e[2]).sqrt();
+        let v = self.scale(scale).sqrt();
+        let r = (scale * self[0]).sqrt();
+        let g = (scale * self[1]).sqrt();
+        let b = (scale * self[2]).sqrt();
 
         writer.write_all(format!("{} {} {}\n",
             (256.0 * clamp(r, 0.0, 0.999)) as i32,
@@ -46,27 +48,27 @@ impl Vec3 {
     }
 
     pub fn scale(&self, scalar: f64) -> Self {
-        Vec3::new(self.e[0] * scalar, self.e[1] * scalar, self.e[2] * scalar)
+        Vec3 { v: self.v.scale(scalar) }
     }
 
     pub fn div(&self, scalar: f64) -> Self {
-        Vec3::new(self.e[0] / scalar, self.e[1] / scalar, self.e[2] / scalar)
+        Vec3 { v: self.v.scale(1.0/scalar) }
     }
 
     pub fn dot(&self, rhs: &Self) -> f64 {
-        self.e[0] * rhs.e[0] + self.e[1] * rhs.e[1] + self.e[2] * rhs.e[2]
+        self.v.dot(&rhs.v)
     }
 
     pub fn cross(&self, rhs: &Self) -> Self {
-        Vec3::new(
-            self.e[1] * rhs.e[2] - self.e[2] * rhs.e[1],
-            self.e[2] * rhs.e[0] - self.e[0] * rhs.e[2],
-            self.e[0] * rhs.e[1] - self.e[1] * rhs.e[0],
-        )
+        Vec3 { v: self.v.cross(&rhs.v) }
+    }
+
+    pub fn sqrt(&self) -> Self {
+        Vec3::new( self.x().sqrt(), self.y().sqrt(), self.z().sqrt())
     }
 
     pub fn unit_vector(&self) -> Self {
-        self.div(self.length())
+        Vec3 { v: self.v.normalize() }
     }
 
     pub fn random() -> Self {
@@ -128,7 +130,7 @@ impl Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Self::Output {
-        Vec3::new(-self.e[0], -self.e[1], -self.e[2])
+        Vec3 { v: self.v.neg() }
     }
 }
 
@@ -136,23 +138,7 @@ impl Index<usize> for Vec3 {
     type Output = f64;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.e[index]
-    }
-}
-
-impl AddAssign for Vec3 {
-    fn add_assign(&mut self, rhs: Self) {
-        self.e[0] += rhs.e[0];
-        self.e[1] += rhs.e[1];
-        self.e[2] += rhs.e[2];
-    }
-}
-
-impl MulAssign for Vec3 {
-    fn mul_assign(&mut self, rhs: Self) {
-        self.e[0] *= rhs.e[0];
-        self.e[1] *= rhs.e[1];
-        self.e[2] *= rhs.e[2];
+        &self.v[index]
     }
 }
 
@@ -160,7 +146,7 @@ impl Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Vec3::new(self.e[0] + rhs.e[0], self.e[1] + rhs.e[1], self.e[2] + rhs.e[2])
+        Vec3{ v: self.v + rhs.v }
     }
 }
 
@@ -168,7 +154,7 @@ impl Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Vec3::new(self.e[0] - rhs.e[0], self.e[1] - rhs.e[1], self.e[2] - rhs.e[2])
+        Vec3{ v: self.v - rhs.v }
     }
 }
 
@@ -176,6 +162,6 @@ impl Mul for Vec3 {
     type Output = Vec3;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Vec3::new(self.e[0] * rhs.e[0], self.e[1] * rhs.e[1], self.e[2] * rhs.e[2])
+        Vec3::new(self.x() * rhs.x(), self.y() * rhs.y(), self.z() * rhs.z())
     }
 }

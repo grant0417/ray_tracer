@@ -96,9 +96,16 @@ impl Hittable for Triangle {
     }
 
     fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
-        output_box.add_point(&self.p1);
-        output_box.add_point(&self.p2);
-        output_box.add_point(&self.p3);
+        let minx = self.p1.x().min(self.p2.x().min(self.p3.x()));
+        let miny = self.p1.y().min(self.p2.y().min(self.p3.y()));
+        let minz = self.p1.z().min(self.p2.z().min(self.p3.z()));
+
+        let maxx= self.p1.x().max(self.p2.x().max(self.p3.x()));
+        let maxy= self.p1.y().max(self.p2.y().max(self.p3.y()));
+        let maxz= self.p1.z().max(self.p2.z().max(self.p3.z()));
+
+        output_box.min = Vec3::new(minx, miny, minz);
+        output_box.max = Vec3::new(maxx, maxy, maxz);
 
         true
     }

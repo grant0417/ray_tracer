@@ -126,7 +126,7 @@ fn book1_scene() -> HittableList {
 fn main() -> Result<(), Box<dyn Error>> {
     const IMAGE_WIDTH: usize = 1200;
     const IMAGE_HEIGHT: usize = 800;
-    const SAMPLES_PER_PIXEL: usize = 50;
+    const SAMPLES_PER_PIXEL: usize = 1000;
     const MAX_DEPTH: usize = 50;
 
     let time = Instant::now();
@@ -186,7 +186,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let u = (*i as f64 + random_double()) / IMAGE_WIDTH as f64;
             let v = (*j as f64 + random_double()) / IMAGE_HEIGHT as f64;
             let r = cam.get_ray(u, v);
-            color += ray_color(&r, &world, MAX_DEPTH);
+            color = color + ray_color(&r, &world, MAX_DEPTH);
         }
         let count = count.fetch_add(1, Ordering::SeqCst);
         if count % (total/1000) == 0 {

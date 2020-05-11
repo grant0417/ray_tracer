@@ -5,8 +5,8 @@ use core::mem;
 
 #[derive(Clone)]
 pub struct AABB {
-    min: Vec3,
-    max: Vec3,
+    pub min: Vec3,
+    pub max: Vec3,
 }
 
 impl AABB {

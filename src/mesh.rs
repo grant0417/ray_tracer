@@ -9,6 +9,7 @@ use crate::aabb::AABB;
 use crate::bvh::BVHNode;
 
 pub struct Mesh {
+    name: String,
     list: BVHNode,
 }
 
@@ -16,6 +17,8 @@ impl Mesh {
     pub fn new_from_obj(path: &str, center: &Vec3, scale: f64, flat: bool, material: Arc<dyn Material>) -> Result<Self, tobj::LoadError> {
         let (models, materials) = tobj::load_obj(path)?;
         let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len()/3);
+
+        let name = models[0].name.clone();
 
         for (_, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
@@ -71,7 +74,13 @@ impl Mesh {
             }
         }
 
-        Ok(Mesh{ list: BVHNode::from_list(&mut list, 0.0, 0.0) })
+        eprintln!("Mesh '{}' imported with {} faces.", &name, list.objects.len());
+
+        let mesh = Mesh{ name, list: BVHNode::from_list(&mut list, 0.0, 0.0) };
+
+        eprintln!("Mesh '{}' bounded.", &mesh.name);
+
+        Ok(mesh)
     }
 }
 
