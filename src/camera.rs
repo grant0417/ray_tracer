@@ -1,5 +1,6 @@
 use crate::vec3::Vec3;
 use crate::ray::Ray;
+use crate::util::random_double_range;
 
 #[derive(Copy, Clone)]
 pub struct Camera {
@@ -11,12 +12,21 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f64,
+    t0: f64,
+    t1: f64
 }
 
 impl Camera {
     pub fn new(lookfrom: Vec3, lookat: Vec3, vup: Vec3,
                vfov: f64,
                aspect: f64, aperture: f64, focus_dist: f64) -> Self {
+        Camera::new_timed(lookfrom, lookat, vup, vfov, aspect, aperture, focus_dist, 0.0, 0.0)
+    }
+    
+    pub fn new_timed(lookfrom: Vec3, lookat: Vec3, vup: Vec3, 
+                     vfov: f64, 
+                     aspect: f64, aperture: f64, focus_dist: f64,
+                     t0: f64, t1: f64) -> Self {
 
         let origin = lookfrom;
         let lens_radius = aperture / 2.0;
@@ -44,14 +54,17 @@ impl Camera {
             u,
             v,
             w,
-            lens_radius
+            lens_radius,
+            t0,
+            t1
         }
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         let rd = Vec3::random_in_unit_disk().scale(self.lens_radius);
         let offset = self.u.scale(rd.x()) + self.v.scale(rd.y());
-        Ray::new(self.origin + offset,
-                 self.lower_left_corner + self.horizontal.scale(s) + self.vertical.scale(t) - self.origin - offset)
+        Ray::new_timed(self.origin + offset,
+                 self.lower_left_corner + self.horizontal.scale(s) + self.vertical.scale(t) - self.origin - offset,
+                    random_double_range(self.t0, self.t1))
     }
 }

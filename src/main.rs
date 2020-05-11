@@ -70,8 +70,11 @@ fn book1_scene() -> HittableList {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Vec3::random() * Vec3::random();
-                    world.add(Arc::new(Sphere::new(
+                    let center1 = &(center + Vec3::new(0.0, random_double_range(0.0, 0.5), 0.0));
+                    world.add(Arc::new(MovingSphere::new(
                         &center,
+                        center1,
+                        0.0, 1.0,
                         0.2,
                         Arc::new(Lambertian::new(&albedo)),
                     )));
@@ -120,34 +123,18 @@ fn book1_scene() -> HittableList {
 fn main() -> Result<(), Box<dyn Error>> {
     const IMAGE_WIDTH: usize = 1200;
     const IMAGE_HEIGHT: usize = 800;
-    const SAMPLES_PER_PIXEL: usize = 20;
+    const SAMPLES_PER_PIXEL: usize = 30;
     const MAX_DEPTH: usize = 50;
 
-    let dragon = Mesh::new_from_obj("dragon_hq.obj", &Vec3::new(-0.7, 0.0, -1.5), 1.0, false,
-                                        Arc::new(Metal::new(&Vec3::new(0.0, 0.66, 0.42), 0.1)))?;
-
-    let teapot = Mesh::new_from_obj("teapot.obj",
-                                   &Vec3::new(0.0, 0.0, 0.0), 0.3, false,
-                                    Arc::new(Lambertian::new(&Vec3::new(0.8, 0.8, 0.8))))?;
-
-    let mut world = HittableList::new();
-
-    world.add(Arc::new(Sphere::new(
-        &Vec3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new(&Vec3::new(0.5, 0.5, 0.5))),
-    )));
-
-    world.add(Arc::new(dragon));
-    world.add(Arc::new(teapot));
+    let mut world = book1_scene();
 
     let aspect_ratio = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
-    let lookfrom = Vec3::new(-3.0, 1.5, 5.0);
-    let lookat = Vec3::new(-0.6, 0.6, 0.0);
+    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom-lookat).length();
-    let aperture = 0.1;
-    let cam = Camera::new(
+    let dist_to_focus = 10.0;
+    let aperture = 0.0;
+    let cam = Camera::new_timed(
         lookfrom,
         lookat,
         vup,
@@ -155,6 +142,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0
     );
 
     let time = Instant::now();
@@ -178,7 +167,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             color += ray_color(&r, &world, MAX_DEPTH);
         }
         let count = count.fetch_add(1, Ordering::SeqCst);
-        if count % 1000 == 0 {
+        if count % (total/1000) == 0 {
             eprintln!("{:4.1}%", (count as f64 / total as f64) * 100.0);
         }
         color

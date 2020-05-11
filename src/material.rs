@@ -7,12 +7,16 @@ pub trait Material: Sync + Send {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
 }
 
+/// https://en.wikipedia.org/wiki/Schlick%27s_approximation
 fn schlick(cosine: f64, ref_idx: f64) -> f64 {
     let mut r0 = (1.0-ref_idx) / (1.0+ref_idx);
     r0 = r0 * r0;
     r0 + (1.0-r0) * (1.0 - cosine).powi(5)
 }
 
+/// A material that models a perfectly diffuse surface that
+/// scatters equally in all directions
+/// https://en.wikipedia.org/wiki/Lambertian_reflectance
 pub struct Lambertian {
     albedo: Vec3,
 }
@@ -24,9 +28,9 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
+    fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let scattered_direction = rec.normal + Vec3::random_unit_vector();
-        *scattered = Ray::new(rec.p, scattered_direction);
+        *scattered = Ray::new_timed(rec.p, scattered_direction, r_in.time());
         *attenuation = self.albedo;
         true
     }
@@ -50,15 +54,19 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let reflected = Vec3::reflect(&r_in.direction().unit_vector(), &rec.normal);
-        *scattered = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere().scale(self.fuzz));
+        *scattered = Ray::new_timed(rec.p, reflected + Vec3::random_in_unit_sphere().scale(self.fuzz), r_in.time());
         *attenuation = self.albedo;
         scattered.direction().dot(&rec.normal) > 0.0
     }
 }
 
+
+/// A dielectric material that models materials that reflect and refract
+/// light based on an index of reflection
+/// https://en.wikipedia.org/wiki/Dielectric
+/// https://en.wikipedia.org/wiki/Snell%27s_law
 pub struct Dielectric {
     ref_idx: f64,
-
 }
 
 impl Dielectric {
@@ -81,17 +89,17 @@ impl Material for Dielectric {
 
         if etai_over_etat * sin_theta > 1.0 {
             let reflected = Vec3::reflect(&unit_direction, &rec.normal);
-            *scattered = Ray::new(rec.p, reflected);
+            *scattered = Ray::new_timed(rec.p, reflected, r_in.time());
             return true;
         }
         let reflect_prob = schlick(cos_theta, etai_over_etat);
         if random_double() < reflect_prob {
             let reflected = Vec3::reflect(&unit_direction, &rec.normal);
-            *scattered = Ray::new(rec.p, reflected);
+            *scattered = Ray::new_timed(rec.p, reflected, r_in.time());
             return true;
         }
         let refracted = Vec3::refract(&unit_direction, &rec.normal, etai_over_etat);
-        *scattered = Ray::new(rec.p, refracted);
+        *scattered = Ray::new_timed(rec.p, refracted, r_in.time());
         true
     }
 }

@@ -13,7 +13,11 @@ pub fn random_double() -> f64 {
 }
 
 pub fn random_double_range(min: f64, max: f64) -> f64 {
-    let between = Uniform::from(min..max);
-    let mut rng = rand::thread_rng();
-    between.sample(&mut rng)
+    if min.ne(&max) {
+        let between = Uniform::from(min..max);
+        let mut rng = rand::thread_rng();
+        between.sample(&mut rng)
+    } else {
+        min
+    }
 }
