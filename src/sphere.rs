@@ -3,6 +3,7 @@ use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::material::Material;
 use std::sync::Arc;
+use crate::aabb::AABB;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -47,6 +48,13 @@ impl Hittable for Sphere {
             }
         }
         false
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+        *output_box = AABB::new(
+            &(self.center - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center - Vec3::new(self.radius, self.radius, self.radius)));
+        true
     }
 }
 
@@ -104,5 +112,16 @@ impl Hittable for MovingSphere {
             }
         }
         false
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+        let box0 = AABB::new(
+            &(self.center(t0) - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center(t0) - Vec3::new(self.radius, self.radius, self.radius)));
+        let box1 = AABB::new(
+            &(self.center(t1) - Vec3::new(self.radius, self.radius, self.radius)),
+            &(self.center(t1) - Vec3::new(self.radius, self.radius, self.radius)));
+        *output_box = box0.surrounding_box(&box1);
+        true
     }
 }

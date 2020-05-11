@@ -2,6 +2,7 @@ use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::material::{Material, Lambertian};
 use std::sync::Arc;
+use crate::aabb::AABB;
 
 #[derive(Clone)]
 pub struct HitRecord {
@@ -31,4 +32,5 @@ impl HitRecord {
 
 pub trait Hittable: Sync + Send {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool;
 }

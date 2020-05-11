@@ -6,7 +6,7 @@ use std::f64;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3 {
-    e: [f64; 3],
+    pub e: [f64; 3],
 }
 
 impl Vec3 {

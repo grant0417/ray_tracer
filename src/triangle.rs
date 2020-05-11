@@ -3,6 +3,7 @@ use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::material::Material;
 use std::sync::Arc;
+use crate::aabb::AABB;
 
 #[derive(Clone)]
 pub enum Norm {
@@ -92,5 +93,13 @@ impl Hittable for Triangle {
         } else {
             false
         }
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+        output_box.add_point(&self.p1);
+        output_box.add_point(&self.p2);
+        output_box.add_point(&self.p3);
+
+        true
     }
 }

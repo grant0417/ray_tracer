@@ -5,7 +5,7 @@ but in Rust. Also includes .obj loading and uses Rayon to allow parallel executi
 
 Here are some fancy images from the ray tracer:
   
-![Utah Teapot](imgs/utah.jpg)
+![Utah Teapot and Stanford Dragon](imgs/objs.png)
   
 ![Lots of Balls](imgs/image.png)
 

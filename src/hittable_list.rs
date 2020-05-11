@@ -1,10 +1,13 @@
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use std::sync::Arc;
+use crate::aabb::AABB;
+use std::thread::sleep;
+use crate::vec3::Vec3;
 
 #[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<Arc<dyn Hittable>>
+    pub objects: Vec<Arc<dyn Hittable>>
 }
 
 impl HittableList {
@@ -40,5 +43,20 @@ impl Hittable for HittableList {
         }
 
         hit_anything
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+        if self.objects.is_empty() { return false; }
+
+        let mut temp_box = AABB::new(&Vec3::zero(), &Vec3::zero());
+        let mut first_box = true;
+
+        for object in &self.objects {
+            if object.bounding_box(t0, t1, &mut temp_box) { return false; }
+            *output_box = if first_box { temp_box.clone() } else { output_box.surrounding_box(&temp_box) };
+            first_box = false;
+        }
+
+        true
     }
 }

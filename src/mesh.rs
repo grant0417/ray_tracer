@@ -1,22 +1,23 @@
 use crate::hittable_list::HittableList;
-use std::path;
 use crate::triangle::Triangle;
-use crate::material::{Metal, Lambertian, Material};
+use crate::material::{Material};
 use crate::vec3::Vec3;
 use std::sync::Arc;
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
+use crate::aabb::AABB;
+use crate::bvh::BVHNode;
 
 pub struct Mesh {
-    list: HittableList,
+    list: BVHNode,
 }
 
 impl Mesh {
     pub fn new_from_obj(path: &str, center: &Vec3, scale: f64, flat: bool, material: Arc<dyn Material>) -> Result<Self, tobj::LoadError> {
         let (models, materials) = tobj::load_obj(path)?;
-        let mut list = HittableList::new();
+        let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len()/3);
 
-        for (i, m) in models.iter().enumerate() {
+        for (_, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
 
             for f in 0..mesh.indices.len() / 3 {
@@ -69,13 +70,18 @@ impl Mesh {
                 }
             }
         }
-        Ok(Mesh{list})
+
+        Ok(Mesh{ list: BVHNode::from_list(&mut list, 0.0, 0.0) })
     }
 }
 
 impl Hittable for Mesh {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         self.list.hit(r, t_min, t_max, rec)
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+        self.list.bounding_box(t0, t1, output_box)
     }
 }
 

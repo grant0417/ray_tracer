@@ -21,3 +21,9 @@ pub fn random_double_range(min: f64, max: f64) -> f64 {
         min
     }
 }
+
+pub fn random_int_range(min: i64, max: i64) -> i64 {
+    let between = Uniform::from(min..max);
+    let mut rng = rand::thread_rng();
+    between.sample(&mut rng)
+}
