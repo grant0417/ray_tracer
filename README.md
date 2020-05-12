@@ -1,6 +1,7 @@
 # Ray Tracer
 
 ![Cornell Box](imgs/cornell.png)
+Rendered at 1280x1280 with 4096 samples/pixel in 01:19:34 on a Ryzen R7 2700x.
 
 A basic ray tracer that is based on [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 but in Rust.
