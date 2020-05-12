@@ -1,8 +1,9 @@
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::material::{Material, Lambertian};
-use std::sync::Arc;
 use crate::aabb::AABB;
+
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct HitRecord {

@@ -2,8 +2,9 @@ use crate::vec3::Vec3;
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::material::Material;
-use std::sync::Arc;
 use crate::aabb::AABB;
+
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub enum Norm {
@@ -95,7 +96,7 @@ impl Hittable for Triangle {
         }
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+    fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut AABB) -> bool {
         let minx = self.p1.x().min(self.p2.x().min(self.p3.x()));
         let miny = self.p1.y().min(self.p2.y().min(self.p3.y()));
         let minz = self.p1.z().min(self.p2.z().min(self.p3.z()));

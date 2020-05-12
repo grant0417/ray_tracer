@@ -1,5 +1,6 @@
 use crate::vec3::Vec3;
 use crate::ray::Ray;
+
 use std::f64;
 use core::mem;
 
@@ -57,7 +58,7 @@ impl AABB {
             let inv_d = 1.0 / r.direction()[a];
             let mut t0 = (self.min[a] - r.origin()[a]) * inv_d;
             let mut t1 = (self.max[a] - r.origin()[a]) * inv_d;
-            if (inv_d < 0.0) {
+            if inv_d < 0.0 {
                 mem::swap(&mut t0, &mut t1);
             }
             *tmin = if t0 > *tmin { t0 } else { *tmin };

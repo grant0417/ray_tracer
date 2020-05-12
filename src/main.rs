@@ -1,37 +1,32 @@
 mod vec3;
-use vec3::*;
 mod ray;
-use ray::*;
 mod hittable;
-use hittable::*;
 mod sphere;
-use sphere::*;
 mod hittable_list;
-use hittable_list::*;
 mod camera;
-use camera::*;
 mod util;
-use util::*;
 mod material;
-use material::*;
 mod triangle;
-use triangle::*;
 mod mesh;
-use mesh::*;
 mod aabb;
-use aabb::*;
 mod bvh;
-use bvh::*;
+
+use crate::hittable::{Hittable, HitRecord};
+use crate::ray::Ray;
+use crate::vec3::Vec3;
+use crate::hittable_list::HittableList;
+use crate::sphere::{Sphere, MovingSphere};
+use crate::material::{Lambertian, Metal, Dielectric};
+use crate::util::{random_double, random_double_range};
+use crate::mesh::Mesh;
+use crate::camera::Camera;
 
 use std::sync::Arc;
-use std::{error::Error, io};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::{error::Error};
 use rayon::prelude::*;
 use std::time::Instant;
 use indicatif::{ProgressBar, ProgressStyle};
-use image::{RgbImage, ImageBuffer, Rgb};
 use clap::{App, Arg};
-
 
 fn ray_color<T: Hittable>(r: &Ray, world: &T, depth: usize) -> Vec3 {
     let mut rec = HitRecord::new();
@@ -178,7 +173,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let time = Instant::now();
 
 
-    let dragon = Mesh::new_from_obj("obj_files/dragon_lq.obj", &Vec3::new(-0.7, 0.0, -1.5), 1.0, false,
+    let dragon = Mesh::new_from_obj("obj_files/dragon_hq.obj", &Vec3::new(-0.7, 0.0, -1.5), 1.0, false,
                                     Arc::new(Metal::new(&Vec3::new(0.3125, 0.78125, 0.42), 0.46875)))?;
 
     let teapot = Mesh::new_from_obj("obj_files/teapot.obj",

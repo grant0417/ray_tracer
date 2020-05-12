@@ -1,7 +1,8 @@
-use std::io::{Write};
-use std::ops::{MulAssign, Neg, Index, Add, Sub, Mul};
-use std::io;
 use crate::util::{clamp, random_double, random_double_range};
+
+use std::io::{Write};
+use std::ops::{Neg, Index, Add, Sub, Mul};
+use std::io;
 use std::f64;
 use nalgebra::Vector3;
 
@@ -44,9 +45,9 @@ impl Vec3 {
     pub fn return_color(&self, samples_per_pixel: usize) -> (i32, i32, i32) {
         let scale = 1.0 / samples_per_pixel as f64;
         let v = self.scale(scale).sqrt();
-        let r = (scale * self[0]).sqrt();
-        let g = (scale * self[1]).sqrt();
-        let b = (scale * self[2]).sqrt();
+        let r = v.x();
+        let g = v.y();
+        let b = v.z();
         ((256.0 * clamp(r, 0.0, 0.999)) as i32,
          (256.0 * clamp(g, 0.0, 0.999)) as i32,
          (256.0 * clamp(b, 0.0, 0.999)) as i32,)

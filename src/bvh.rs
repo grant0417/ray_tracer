@@ -1,10 +1,12 @@
-use std::sync::Arc;
 use crate::hittable::{Hittable, HitRecord};
 use crate::aabb::AABB;
 use crate::ray::Ray;
 use crate::util::random_int_range;
-use std::cmp::Ordering;
 use crate::hittable_list::HittableList;
+
+use rayon::slice::ParallelSliceMut;
+use std::cmp::Ordering;
+use std::sync::Arc;
 
 pub struct BVHNode {
     left: Arc<dyn Hittable>,
@@ -28,7 +30,7 @@ impl BVHNode {
                 (objects[start+1].clone(), objects[start].clone())
             }
         } else {
-            objects[start..end].sort_by(|a, b| {
+            objects[start..end].par_sort_by(|a, b| {
                 if box_compare(a.clone(), b.clone(), axis) {
                     Ordering::Less
                 } else {
@@ -77,7 +79,7 @@ impl Hittable for BVHNode {
         hit_left || hit_right
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+    fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut AABB) -> bool {
         *output_box = self.aabb_box.clone();
         true
     }

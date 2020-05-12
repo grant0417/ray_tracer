@@ -2,8 +2,9 @@ use crate::vec3::Vec3;
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::material::Material;
-use std::sync::Arc;
 use crate::aabb::AABB;
+
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -50,7 +51,7 @@ impl Hittable for Sphere {
         false
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+    fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(
             &(self.center - Vec3::new(self.radius, self.radius, self.radius)),
             &(self.center - Vec3::new(self.radius, self.radius, self.radius)));

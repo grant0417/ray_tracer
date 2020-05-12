@@ -2,11 +2,12 @@ use crate::hittable_list::HittableList;
 use crate::triangle::Triangle;
 use crate::material::{Material};
 use crate::vec3::Vec3;
-use std::sync::Arc;
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::aabb::AABB;
 use crate::bvh::BVHNode;
+
+use std::sync::Arc;
 
 pub struct Mesh {
     name: String,
@@ -15,7 +16,7 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new_from_obj(path: &str, center: &Vec3, scale: f64, flat: bool, material: Arc<dyn Material>) -> Result<Self, tobj::LoadError> {
-        let (models, materials) = tobj::load_obj(path)?;
+        let (models, _materials) = tobj::load_obj(path)?;
         let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len()/3);
 
         let name = models[0].name.clone();
@@ -93,6 +94,3 @@ impl Hittable for Mesh {
         self.list.bounding_box(t0, t1, output_box)
     }
 }
-
-
-
