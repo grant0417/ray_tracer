@@ -5,6 +5,7 @@ use crate::material::Material;
 use crate::aabb::AABB;
 
 use std::sync::Arc;
+use std::f64;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -16,6 +17,13 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(center: &Vec3, radius: f64, mat: Arc<dyn Material>) -> Self {
         Sphere { center: *center, radius, material: mat }
+    }
+
+    fn get_sphere_uv(point: &Vec3, u: &mut f64, v: &mut f64) {
+        let phi = point.z().atan2(point.x());
+        let theta = point.y().asin();
+        *u = 1.0 - (phi + f64::consts::PI) / (2.0 * f64::consts::PI);
+        *v = (theta + f64::consts::PI / 2.0) / f64::consts::PI;
     }
 }
 
@@ -36,6 +44,7 @@ impl Hittable for Sphere {
                 let outward_normal = (rec.p - self.center).div(self.radius);
                 rec.set_face_normal(r, &outward_normal);
                 rec.mat = self.material.clone();
+                Sphere::get_sphere_uv(&(rec.p - self.center).div(self.radius), &mut rec.u, &mut rec.v);
                 return true;
             }
             temp = (-half_b + root) / a;
@@ -45,6 +54,7 @@ impl Hittable for Sphere {
                 let outward_normal = (rec.p - self.center).div(self.radius);
                 rec.set_face_normal(r, &outward_normal);
                 rec.mat = self.material.clone();
+                Sphere::get_sphere_uv(&(rec.p - self.center).div(self.radius), &mut rec.u, &mut rec.v);
                 return true;
             }
         }

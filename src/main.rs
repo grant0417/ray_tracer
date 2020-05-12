@@ -11,6 +11,7 @@ mod mesh;
 mod aabb;
 mod bvh;
 mod texture;
+mod perlin;
 
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
@@ -28,7 +29,7 @@ use rayon::prelude::*;
 use std::time::Instant;
 use indicatif::{ProgressBar, ProgressStyle};
 use clap::{App, Arg};
-use crate::texture::{SolidTexture, CheckerTexture};
+use crate::texture::{SolidTexture, CheckerTexture, NoiseTexture, ImageTexture};
 
 fn ray_color<T: Hittable>(r: &Ray, world: &T, depth: usize) -> Vec3 {
     let mut rec = HitRecord::new();
@@ -138,6 +139,28 @@ fn two_spheres() -> HittableList {
     objects
 }
 
+fn two_perlin_spheres() -> HittableList {
+    let mut objects = HittableList::new_with_capacity(2);
+
+    let checker = Arc::new(Lambertian::new(Arc::new(NoiseTexture::new(8.0))));
+
+    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, -1000.0, 0.0), 1000.0, checker.clone())));
+    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, 2.0, 0.0), 2.0, checker)));
+
+    objects
+}
+
+fn earth() -> HittableList {
+    let mut objects = HittableList::new_with_capacity(2);
+
+    let earth_texture = Arc::new(ImageTexture::new("img_files/earthmap.jpg"));
+    let earth_surface = Arc::new(Lambertian::new(earth_texture));
+    let globe = Arc::new(Sphere::new(&Vec3::zero(), 2.0, earth_surface));
+    objects.add(globe);
+
+    objects
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     const IMAGE_WIDTH: usize = 1200;
     const IMAGE_HEIGHT: usize = 800;
@@ -188,16 +211,39 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let time = Instant::now();
 
-    let world = two_spheres();
+
+    // let dragon = Mesh::new_from_obj("obj_files/dragon_lq.obj", &Vec3::new(-0.7, 0.0, -1.5), 1.0, false,
+    //                                 Arc::new(Metal::new(&Vec3::new(0.3125, 0.78125, 0.42), 0.46875)))?;
+    //
+    // let teapot = Mesh::new_from_obj("obj_files/teapot.obj",
+    //                                 &Vec3::new(0.0, 0.0, 0.0), 1.0, false,
+    //                                 Arc::new(Lambertian::new(Arc::new(SolidTexture::new(0.8, 0.8, 0.8)))))?;
+    //
+    // let mut world = HittableList::new();
+    //
+    // world.add(Arc::new(Sphere::new(
+    //     &Vec3::new(0.0, -1000.0, 0.0),
+    //     1000.0,
+    //     Arc::new(Lambertian::new(Arc::new(
+    //         CheckerTexture::new(
+    //             Arc::new(SolidTexture::new(0.2, 0.3, 0.1)),
+    //         Arc::new(SolidTexture::new(0.9, 0.9, 0.9))
+    //         ))))),
+    // ));
+    //
+    // world.add(Arc::new(dragon));
+    // world.add(Arc::new(teapot));
+
+    let world = earth();
 
     eprintln!("Scene with {} objects.\n", &world.objects.len());
 
     let aspect_ratio = width as f64 / height as f64;
-    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let lookfrom = Vec3::new(-3.0, 1.5, 5.0);
+    let lookat = Vec3::new(-0.6, 0.6, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
-    let aperture = 0.0;
+    let dist_to_focus = (lookfrom-lookat).length();
+    let aperture = 0.1;
     let cam = Camera::new_timed(
         lookfrom,
         lookat,
@@ -211,7 +257,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
 
     let mut positions = Vec::with_capacity(height * width);
-
 
         for j in (0..height).rev() {
             for i in 0..width {
