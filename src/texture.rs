@@ -1,8 +1,8 @@
 use crate::vec3::Vec3;
-use std::sync::Arc;
 use crate::perlin::Perlin;
-use image::GenericImageView;
 use crate::util::clamp;
+
+use image::GenericImageView;
 
 pub trait Texture: Sync + Send {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3;
@@ -30,19 +30,22 @@ impl Texture for SolidTexture {
     }
 }
 
-pub struct CheckerTexture {
-    even: Arc<dyn Texture>,
-    odd: Arc<dyn Texture>,
+pub struct CheckerTexture<T, U>
+    where T: Texture, U: Texture {
+    even: T,
+    odd: U,
 }
 
-impl CheckerTexture {
-    pub fn new(even: Arc<dyn Texture>,
-               odd: Arc<dyn Texture>) -> Self {
+impl<T, U> CheckerTexture<T, U>
+    where T: Texture, U: Texture {
+    pub fn new(even: T,
+               odd: U) -> Self {
         CheckerTexture { even, odd }
     }
 }
 
-impl Texture for CheckerTexture {
+impl<T, U> Texture for CheckerTexture<T, U>
+    where T: Texture, U: Texture {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
         let sines = (10.0 * p.x()).sin()
                        * (10.0 * p.y()).sin()

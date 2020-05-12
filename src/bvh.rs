@@ -67,14 +67,15 @@ impl BVHNode {
 
 impl Hittable for BVHNode {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        let mut t_min = t_min;
-        let mut t_max = t_max;
-        if !self.aabb_box.hit(r, &mut t_min, &mut t_max) {
+        let mut tmin = t_min;
+        let mut tmax = t_max;
+        if !self.aabb_box.hit(r, &mut tmin, &mut tmax) {
             return false;
         }
 
         let hit_left = self.left.hit(r, t_min, t_max, rec);
-        let hit_right = self.right.hit(r, t_min, if hit_left { rec.t } else { t_max }, rec);
+        let rect = rec.t;
+        let hit_right = self.right.hit(r, t_min, if hit_left { rect } else { tmax }, rec);
 
         hit_left || hit_right
     }

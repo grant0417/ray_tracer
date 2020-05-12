@@ -56,8 +56,8 @@ impl AABB {
     pub fn hit(&self, r: &Ray, tmin: &mut f64, tmax: &mut f64) -> bool {
         for a in 0..3 {
             let inv_d = 1.0 / r.direction()[a];
-            let mut t0 = (self.min[a] - r.origin()[a]) * inv_d;
-            let mut t1 = (self.max[a] - r.origin()[a]) * inv_d;
+            let mut t0 = (self.min()[a] - r.origin()[a]) * inv_d;
+            let mut t1 = (self.max()[a] - r.origin()[a]) * inv_d;
             if inv_d < 0.0 {
                 mem::swap(&mut t0, &mut t1);
             }

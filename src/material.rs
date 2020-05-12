@@ -2,11 +2,13 @@ use crate::ray::Ray;
 use crate::hittable::HitRecord;
 use crate::vec3::Vec3;
 use crate::util::random_double;
-use std::sync::Arc;
 use crate::texture::Texture;
 
 pub trait Material: Sync + Send {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
+    fn emitted(&self, u: f64, v: f64, point: &Vec3) -> Vec3 {
+        Vec3::zero()
+    }
 }
 
 /// https://en.wikipedia.org/wiki/Schlick%27s_approximation
@@ -19,17 +21,20 @@ fn schlick(cosine: f64, ref_idx: f64) -> f64 {
 /// A material that models a perfectly diffuse surface that
 /// scatters equally in all directions
 /// https://en.wikipedia.org/wiki/Lambertian_reflectance
-pub struct Lambertian {
-    albedo: Arc<dyn Texture>,
+pub struct Lambertian<T>
+    where T: Texture {
+    albedo: T,
 }
 
-impl Lambertian {
-    pub fn new(albedo: Arc<dyn Texture>) -> Self {
+impl<T> Lambertian<T>
+    where T: Texture {
+    pub fn new(albedo: T) -> Self {
         Lambertian { albedo }
     }
 }
 
-impl Material for Lambertian {
+impl<T> Material for Lambertian<T>
+    where T: Texture {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let scattered_direction = rec.normal + Vec3::random_unit_vector();
         *scattered = Ray::new_timed(rec.p, scattered_direction, r_in.time());
@@ -103,5 +108,28 @@ impl Material for Dielectric {
         let refracted = Vec3::refract(&unit_direction, &rec.normal, etai_over_etat);
         *scattered = Ray::new_timed(rec.p, refracted, r_in.time());
         true
+    }
+}
+
+pub struct DiffuseLight<T>
+    where T: Texture {
+    emit: T
+}
+
+impl<T> DiffuseLight<T>
+    where T: Texture {
+    pub fn new(emmisive_texture: T) -> Self {
+        DiffuseLight { emit: emmisive_texture }
+    }
+}
+
+impl<T> Material for DiffuseLight<T>
+    where T: Texture{
+    fn scatter(&self, _r_in: &Ray, _rec: &mut HitRecord, _attenuation: &mut Vec3, _scattered: &mut Ray) -> bool {
+        false
+    }
+
+    fn emitted(&self, u: f64, v: f64, point: &Vec3) -> Vec3 {
+        self.emit.value(u, v, point)
     }
 }

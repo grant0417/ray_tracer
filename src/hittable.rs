@@ -2,9 +2,9 @@ use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::material::{Material, Lambertian};
 use crate::aabb::AABB;
+use crate::texture::SolidTexture;
 
 use std::sync::Arc;
-use crate::texture::SolidTexture;
 
 #[derive(Clone)]
 pub struct HitRecord {
@@ -23,7 +23,7 @@ impl HitRecord {
             p: Vec3::zero(),
             normal: Vec3::zero(),
             mat: Arc::new(Lambertian::new(
-                 Arc::new(SolidTexture::new(0.0, 0.0, 0.0)))),
+                 SolidTexture::new(0.0, 0.0, 0.0))),
             t: 0.0,
             u: 0.0,
             v: 0.0,
@@ -40,4 +40,41 @@ impl HitRecord {
 pub trait Hittable: Sync + Send {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool;
+}
+
+pub struct Translate {
+    object: Arc<dyn Hittable>,
+    offset: Vec3,
+}
+
+impl Translate {
+    pub fn new(object: Arc<dyn Hittable>, offset: Vec3) -> Self {
+        Translate { object, offset }
+    }
+}
+
+impl Hittable for Translate {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+        let moved_r = Ray::new_timed(r.origin() - self.offset, r.direction(), r.time());
+
+        if (!self.object.hit(&moved_r, t_min, t_max, rec)) {
+            return false;
+        }
+
+        rec.p = rec.p + self.offset;
+        let norm = rec.normal;
+        rec.set_face_normal(&moved_r, &norm);
+
+        true
+    }
+
+    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+        if !self.object.bounding_box(t0, t1, output_box) {
+            return false;
+        }
+
+        *output_box = AABB::new(&(output_box.min + self.offset), &(output_box.max + self.offset));
+
+        true
+    }
 }
