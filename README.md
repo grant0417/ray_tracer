@@ -1,9 +1,19 @@
 # Ray Tracer
 
+![Cornell Box](imgs/cornell.png)
+
 A basic ray tracer that is based on [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-but in Rust. Also includes .obj loading and uses Rayon to allow parallel execution of the program.
+but in Rust.
+
+Some features include:
+ * Parnell execution of ray tracing
+ * .obj loading
+ * BVH acceleration
+ * Command line interface
+ * Multiple image output formats
 
 Here are some fancy images from the ray tracer:
+
   
 ![Utah Teapot and Stanford Dragon](imgs/objs.png)
   
@@ -11,4 +21,4 @@ Here are some fancy images from the ray tracer:
 
 ## How to use
 
-To run the program clone the repository then run `cargo run > file.ppm`.
+To run the program clone the repository then run `cargo run -- file.png`.
