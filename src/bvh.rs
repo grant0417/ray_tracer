@@ -59,8 +59,7 @@ impl BVHNode {
 
     pub fn from_list(objects: &mut HittableList, time0: f64, time1: f64) -> Self {
         let len = objects.objects.len();
-        let bvhnod = BVHNode::new(&mut objects.objects, 0, len, time0, time1);
-        bvhnod
+        BVHNode::new(&mut objects.objects, 0, len, time0, time1)
     }
 }
 

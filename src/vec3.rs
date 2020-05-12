@@ -32,19 +32,24 @@ impl Vec3 {
         self.v.norm_squared()
     }
 
+    /// PPM color writer
     pub fn write_color<T: Write>(&self, writer: &mut T, samples_per_pixel: usize) -> io::Result<()> {
+        let color = self.return_color(samples_per_pixel);
+        writer.write_all(format!("{} {} {}\n",
+            color.0, color.1, color.2
+        ).as_bytes())?;
+        io::Result::Ok(())
+    }
+
+    pub fn return_color(&self, samples_per_pixel: usize) -> (i32, i32, i32) {
         let scale = 1.0 / samples_per_pixel as f64;
         let v = self.scale(scale).sqrt();
         let r = (scale * self[0]).sqrt();
         let g = (scale * self[1]).sqrt();
         let b = (scale * self[2]).sqrt();
-
-        writer.write_all(format!("{} {} {}\n",
-            (256.0 * clamp(r, 0.0, 0.999)) as i32,
-            (256.0 * clamp(g, 0.0, 0.999)) as i32,
-            (256.0 * clamp(b, 0.0, 0.999)) as i32,
-        ).as_bytes())?;
-        io::Result::Ok(())
+        ((256.0 * clamp(r, 0.0, 0.999)) as i32,
+         (256.0 * clamp(g, 0.0, 0.999)) as i32,
+         (256.0 * clamp(b, 0.0, 0.999)) as i32,)
     }
 
     pub fn scale(&self, scalar: f64) -> Self {
