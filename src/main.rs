@@ -259,51 +259,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     let height = matches.value_of("height").unwrap().parse().unwrap_or(IMAGE_HEIGHT);
     let samples = matches.value_of("samples").unwrap().parse().unwrap_or(SAMPLES_PER_PIXEL);
 
-
     eprintln!("Starting render.");
     eprintln!("Dimensions: {}x{}", width, height);
     eprintln!("Samples per Pixel: {}\n", samples);
 
     let time = Instant::now();
 
-
-    let dragon = Mesh::new_from_obj("obj_files/dragon_hack.obj", &Vec3::new(555.0/2.0, 0.0, 555.0/2.0), 200.0, false,
+    let dragon = Mesh::new_from_obj("dragon.obj", &Vec3::new(555.0/2.0, 0.0, 555.0/2.0), 250.0, false,
                                     Arc::new(Metal::new(&Vec3::new(0.3125, 0.78125, 0.42), 0.46875)))?;
-
-    //let teapot = Mesh::new_from_obj("obj_files/teapot.obj",
-    //                                &Vec3::new(278.0, 278.0, 0.0), 1.0, false,
-    //                                Arc::new(Lambertian::new(SolidTexture::new(0.8, 0.8, 0.8))))?;
 
     let mut world = cornell_box();
 
     world.add(Arc::new(dragon));
-    //world.add(Arc::new(teapot));
 
     eprintln!("Scene with {} objects.\n", &world.objects.len());
 
-    let aspect_ratio = width as f64 / height as f64;
-    let lookfrom = Vec3::new(-3.0, 1.5, 5.0);
-    let lookat = Vec3::new(278.0, 278.0, 0.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom-lookat).length();
-    let aperture = 0.1;
-    let cam = Camera::new_timed(
-        lookfrom,
-        lookat,
-        vup,
-        90.0,
-        aspect_ratio,
-        aperture,
-        dist_to_focus,
-        0.0,
-        1.0
-    );
-
     let cam = cornell_camera(width, height);
 
-
     let mut positions = Vec::with_capacity(height * width);
-
         for j in (0..height).rev() {
             for i in 0..width {
             positions.push((i, j))
