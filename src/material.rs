@@ -2,6 +2,8 @@ use crate::ray::Ray;
 use crate::hittable::HitRecord;
 use crate::vec3::Vec3;
 use crate::util::random_double;
+use std::sync::Arc;
+use crate::texture::Texture;
 
 pub trait Material: Sync + Send {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
@@ -18,12 +20,12 @@ fn schlick(cosine: f64, ref_idx: f64) -> f64 {
 /// scatters equally in all directions
 /// https://en.wikipedia.org/wiki/Lambertian_reflectance
 pub struct Lambertian {
-    albedo: Vec3,
+    albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(a: &Vec3) -> Self {
-        Lambertian { albedo: *a }
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
+        Lambertian { albedo }
     }
 }
 
@@ -31,7 +33,7 @@ impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &mut HitRecord, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let scattered_direction = rec.normal + Vec3::random_unit_vector();
         *scattered = Ray::new_timed(rec.p, scattered_direction, r_in.time());
-        *attenuation = self.albedo;
+        *attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
         true
     }
 }

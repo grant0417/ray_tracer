@@ -10,6 +10,7 @@ mod triangle;
 mod mesh;
 mod aabb;
 mod bvh;
+mod texture;
 
 use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
@@ -27,6 +28,7 @@ use rayon::prelude::*;
 use std::time::Instant;
 use indicatif::{ProgressBar, ProgressStyle};
 use clap::{App, Arg};
+use crate::texture::{SolidTexture, CheckerTexture};
 
 fn ray_color<T: Hittable>(r: &Ray, world: &T, depth: usize) -> Vec3 {
     let mut rec = HitRecord::new();
@@ -57,7 +59,7 @@ fn book1_scene() -> HittableList {
     world.add(Arc::new(Sphere::new(
         &Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Arc::new(Lambertian::new(&Vec3::new(0.5, 0.5, 0.5))),
+        Arc::new(Lambertian::new(Arc::new(SolidTexture::new(0.5, 0.5, 0.5)))),
     )));
 
     for a in -11..11 {
@@ -71,14 +73,14 @@ fn book1_scene() -> HittableList {
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
                     // diffuse
-                    let albedo = Vec3::random() * Vec3::random();
+                    let albedo = SolidTexture::from(Vec3::random() * Vec3::random());
                     let center1 = &(center + Vec3::new(0.0, random_double_range(0.0, 0.5), 0.0));
                     world.add(Arc::new(MovingSphere::new(
                         &center,
                         center1,
                         0.0, 1.0,
                         0.2,
-                        Arc::new(Lambertian::new(&albedo)),
+                        Arc::new(Lambertian::new(Arc::new(albedo))),
                     )));
                 } else if choose_mat > 0.95 {
                     // metal
@@ -110,7 +112,7 @@ fn book1_scene() -> HittableList {
     world.add(Arc::new(Sphere::new(
         &Vec3::new(-4.0, 1.0, 0.0),
         1.0,
-        Arc::new(Lambertian::new(&Vec3::new(0.4, 0.2, 0.1))),
+        Arc::new(Lambertian::new(Arc::new(SolidTexture::new(0.4, 0.2, 0.1)))),
     )));
 
     world.add(Arc::new(Sphere::new(
@@ -120,6 +122,20 @@ fn book1_scene() -> HittableList {
     )));
 
     world
+}
+
+fn two_spheres() -> HittableList {
+    let mut objects = HittableList::new_with_capacity(2);
+
+    let checker = Arc::new(Lambertian::new(
+        Arc::new(CheckerTexture::new(
+        Arc::new(SolidTexture::new(0.2, 0.3, 0.1)),
+        Arc::new(SolidTexture::new(0.9, 0.9, 0.9))))));
+
+    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, -10.0, 0.0), 10.0, checker.clone())));
+    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, 10.0, 0.0), 10.0, checker)));
+
+    objects
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -172,33 +188,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let time = Instant::now();
 
-
-    let dragon = Mesh::new_from_obj("obj_files/dragon_hq.obj", &Vec3::new(-0.7, 0.0, -1.5), 1.0, false,
-                                    Arc::new(Metal::new(&Vec3::new(0.3125, 0.78125, 0.42), 0.46875)))?;
-
-    let teapot = Mesh::new_from_obj("obj_files/teapot.obj",
-                                    &Vec3::new(0.0, 0.0, 0.0), 1.0, false,
-                                    Arc::new(Lambertian::new(&Vec3::new(0.8, 0.8, 0.8))))?;
-
-    let mut world = HittableList::new();
-
-    world.add(Arc::new(Sphere::new(
-        &Vec3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new(&Vec3::new(0.5, 0.5, 0.5))),
-    )));
-
-    world.add(Arc::new(dragon));
-    world.add(Arc::new(teapot));
+    let world = two_spheres();
 
     eprintln!("Scene with {} objects.\n", &world.objects.len());
 
     let aspect_ratio = width as f64 / height as f64;
-    let lookfrom = Vec3::new(-3.0, 1.5, 5.0);
-    let lookat = Vec3::new(-0.6, 0.6, 0.0);
+    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom-lookat).length();
-    let aperture = 0.1;
+    let dist_to_focus = 10.0;
+    let aperture = 0.0;
     let cam = Camera::new_timed(
         lookfrom,
         lookat,
