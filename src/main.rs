@@ -14,26 +14,18 @@ mod texture;
 mod perlin;
 mod aarect;
 mod cube;
+mod constant_medium;
+mod scenes;
 
-use crate::hittable::{Hittable, HitRecord, Translate};
+use crate::hittable::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::hittable_list::HittableList;
-use crate::sphere::{Sphere, MovingSphere};
-use crate::material::{Lambertian, Metal, Dielectric, DiffuseLight};
-use crate::util::{random_double, random_double_range};
-use crate::camera::Camera;
 
-use std::sync::Arc;
 use std::{error::Error};
 use rayon::prelude::*;
 use std::time::Instant;
 use indicatif::{ProgressBar, ProgressStyle};
 use clap::{App, Arg};
-use crate::texture::{SolidTexture, CheckerTexture, NoiseTexture, ImageTexture};
-use crate::aarect::{XYRect, YZRect, XZRect};
-use crate::cube::Cube;
-use crate::mesh::Mesh;
 
 fn ray_color<T: Hittable>(r: &Ray, background_color: &Vec3, world: &T, depth: usize) -> Vec3 {
     let mut rec = HitRecord::new();
@@ -46,174 +38,18 @@ fn ray_color<T: Hittable>(r: &Ray, background_color: &Vec3, world: &T, depth: us
         return *background_color;
     }
 
-    let mut scattered = Ray::new(Vec3::zero(), Vec3::zero());
-    let mut attenuation = Vec3::zero();
+    let mut scattered = Ray::new(Vec3::zero(), Vec3::zero(), 0.0);
     let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p);
+    let mut albedo = Vec3::zero();
+    let mut pdf = 0.0;
 
-    if !rec.mat.clone().scatter(r, &mut rec, &mut attenuation, &mut scattered) {
+    if !rec.mat.clone().scatter(r, &mut rec, &mut albedo, &mut scattered, &mut pdf) {
         return emitted;
     }
 
-    emitted + attenuation * ray_color(&scattered, background_color, world, depth - 1)
-}
+    emitted + albedo.scale(rec.mat.scattering_pdf(r, &rec, &scattered) / pdf)
+        * ray_color(&scattered, background_color, world, depth - 1)
 
-fn book1_scene() -> HittableList {
-    let mut world = HittableList::new();
-
-    world.add(Arc::new(Sphere::new(
-        &Vec3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new(SolidTexture::new(0.5, 0.5, 0.5))),
-    )));
-
-    for a in -11..11 {
-        for b in -11..11 {
-            let choose_mat = random_double();
-            let center = Vec3::new(
-                a as f64 + 0.9 * random_double(),
-                0.2,
-                b as f64 + 0.9 * random_double(),
-            );
-            if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                if choose_mat < 0.8 {
-                    // diffuse
-                    let albedo = SolidTexture::from(Vec3::random() * Vec3::random());
-                    let center1 = &(center + Vec3::new(0.0, random_double_range(0.0, 0.5), 0.0));
-                    world.add(Arc::new(MovingSphere::new(
-                        &center,
-                        center1,
-                        0.0, 1.0,
-                        0.2,
-                        Arc::new(Lambertian::new(albedo)),
-                    )));
-                } else if choose_mat > 0.95 {
-                    // metal
-                    let albedo = Vec3::random_range(0.5, 1.0);
-                    let fuzz = random_double_range(0.0, 0.5);
-                    world.add(Arc::new(Sphere::new(
-                        &center,
-                        0.2,
-                        Arc::new(Metal::new(&albedo, fuzz)),
-                    )));
-                } else {
-                    // glass
-                    world.add(Arc::new(Sphere::new(
-                        &center,
-                        0.2,
-                        Arc::new(Dielectric::new(1.5)),
-                    )));
-                }
-            }
-        }
-    }
-
-    world.add(Arc::new(Sphere::new(
-        &Vec3::new(0.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Dielectric::new(1.5)),
-    )));
-
-    world.add(Arc::new(Sphere::new(
-        &Vec3::new(-4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Lambertian::new(SolidTexture::new(0.4, 0.2, 0.1))),
-    )));
-
-    world.add(Arc::new(Sphere::new(
-        &Vec3::new(4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Metal::new(&Vec3::new(0.7, 0.6, 0.5), 0.0)),
-    )));
-
-    world
-}
-
-fn two_spheres() -> HittableList {
-    let mut objects = HittableList::new_with_capacity(2);
-
-    let checker = Arc::new(Lambertian::new(
-        CheckerTexture::new(
-        SolidTexture::new(0.2, 0.3, 0.1),
-        SolidTexture::new(0.9, 0.9, 0.9))));
-
-    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, -10.0, 0.0), 10.0, checker.clone())));
-    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, 10.0, 0.0), 10.0, checker)));
-
-    objects
-}
-
-fn two_perlin_spheres() -> HittableList {
-    let mut objects = HittableList::new_with_capacity(2);
-
-    let checker = Arc::new(Lambertian::new(NoiseTexture::new(8.0)));
-
-    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, -1000.0, 0.0), 1000.0, checker.clone())));
-    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, 2.0, 0.0), 2.0, checker)));
-
-    objects
-}
-
-fn earth() -> HittableList {
-    let mut objects = HittableList::new_with_capacity(2);
-
-    let earth_texture = ImageTexture::new("img_files/earthmap.jpg");
-    let earth_surface = Arc::new(DiffuseLight::new(earth_texture));
-    let globe = Arc::new(Sphere::new(&Vec3::zero(), 2.0, earth_surface));
-    objects.add(globe);
-
-    objects
-}
-
-fn simple_light() -> HittableList {
-    let mut objects = two_perlin_spheres();
-
-    let difflight = Arc::new(DiffuseLight::new(SolidTexture::new(4.0, 4.0, 4.0)));
-    objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, 7.0, 0.0), 2.0, difflight.clone())));
-    objects.add(Arc::new(XYRect::new(difflight, 3.0, 5.0, 1.0, 3.0, -2.0, )));
-
-    objects
-}
-
-fn cornell_box() -> HittableList {
-    let mut objects = HittableList::new();
-
-    let red = Arc::new(Lambertian::new(SolidTexture::new(0.65, 0.05, 0.05)));
-    let white = Arc::new(Lambertian::new(SolidTexture::new(0.73, 0.73, 0.73)));
-    let green = Arc::new(Lambertian::new(SolidTexture::new(0.12, 0.45, 0.15)));
-    let light = Arc::new(DiffuseLight::new(SolidTexture::new(15.0, 15.0, 15.0)));
-
-    objects.add(Arc::new(YZRect::new(green.clone(), 0.0, 555.0, 0.0, 555.0, 555.0)));
-    objects.add(Arc::new(YZRect::new(red, 0.0, 555.0, 0.0, 555.0, 0.0)));
-    objects.add(Arc::new(XZRect::new(light, 213.0, 343.0, 227.0, 332.0, 554.0)));
-    objects.add(Arc::new(XZRect::new(white.clone(), 0.0, 555.0, 0.0, 555.0, 0.0)));
-    objects.add(Arc::new(XZRect::new(white.clone(), 0.0, 555.0, 0.0, 555.0, 555.0)));
-    objects.add(Arc::new(XYRect::new(white.clone(), 0.0, 555.0, 0.0, 555.0, 555.0)));
-
-    // objects.add(Arc::new(Cube::new(Vec3::new(130.0, 0.0, 65.0), Vec3::new(295.0, 165.0, 230.0), white.clone())));
-    // objects.add(Arc::new(Cube::new(Vec3::new(265.0, 0.0, 295.0), Vec3::new(430.0, 330.0, 460.0), white.clone())));
-
-    objects
-}
-
-fn cornell_camera(width: usize, height: usize) -> Camera {
-    let aspect_ratio = width as f64 / height as f64;
-    let lookfrom = Vec3::new(278.0, 278.0, -800.0);
-    let lookat = Vec3::new(278.0, 278.0, 0.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
-    let aperture = 0.0;
-    let vfov = 40.0;
-    Camera::new_timed(
-        lookfrom,
-        lookat,
-        vup,
-        vfov,
-        aspect_ratio,
-        aperture,
-        dist_to_focus,
-        0.0,
-        1.0
-    )
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -263,18 +99,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     eprintln!("Dimensions: {}x{}", width, height);
     eprintln!("Samples per Pixel: {}\n", samples);
 
+    let _ext = image::ImageFormat::from_path(file)?;
+
     let time = Instant::now();
 
-    let dragon = Mesh::new_from_obj("dragon.obj", &Vec3::new(555.0/2.0, 0.0, 555.0/2.0), 250.0, false,
-                                    Arc::new(Metal::new(&Vec3::new(0.3125, 0.78125, 0.42), 0.46875)))?;
+    //let dragon = Mesh::new_from_obj("dragon.obj", &Vec3::new(555.0/2.0, 0.0, 555.0/2.0), 250.0, false,
+    //                                Arc::new(Metal::new(&Vec3::new(0.3125, 0.78125, 0.42), 0.46875)))?;
 
-    let mut world = cornell_box();
+    let mut world = scenes::cornell_with_cubes();
 
-    world.add(Arc::new(dragon));
+    //world.add(Arc::new(Sphere::new(&Vec3::new(250.0, 250.0, 250.0), 50.0, Arc::new(Dielectric::new(1.5)))));
 
-    eprintln!("Scene with {} objects.\n", &world.objects.len());
+    //world.add(Arc::new(dragon));
 
-    let cam = cornell_camera(width, height);
+    //eprintln!("Scene with {} objects.\n", &world.objects.len());
+
+    let cam = scenes::cornell_camera(width, height);
 
     let mut positions = Vec::with_capacity(height * width);
         for j in (0..height).rev() {
@@ -295,8 +135,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let colors: Vec<Vec3> = positions.par_iter().map(|(i,j)| {
         let mut color = Vec3::zero();
         for _ in 0..(samples) {
-            let u = (*i as f64 + random_double()) / width as f64;
-            let v = (*j as f64 + random_double()) / height as f64;
+            let u = (*i as f64 + util::random_double()) / width as f64;
+            let v = (*j as f64 + util::random_double()) / height as f64;
             let r = cam.get_ray(u, v);
             color = color + ray_color(&r, &Vec3::new(0.0, 0.0, 0.0), &world, MAX_DEPTH);
         }

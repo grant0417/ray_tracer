@@ -4,7 +4,7 @@ use crate::ray::Ray;
 use std::f64;
 use core::mem;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct AABB {
     pub min: Vec3,
     pub max: Vec3,

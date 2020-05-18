@@ -17,9 +17,11 @@ pub struct Mesh {
 impl Mesh {
     pub fn new_from_obj(path: &str, center: &Vec3, scale: f64, flat: bool, material: Arc<dyn Material>) -> Result<Self, tobj::LoadError> {
         let (models, _materials) = tobj::load_obj(path)?;
-        let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len()/3);
 
         let name = models[0].name.clone();
+        eprintln!("Importing mesh '{}'...", &name);
+
+        let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len()/3);
 
         for (_, m) in models.iter().enumerate() {
             let mesh = &m.mesh;

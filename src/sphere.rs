@@ -30,7 +30,7 @@ impl Sphere {
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc = r.origin() - self.center;
-        let a = r.direction().dot(&r.direction());
+        let a = r.direction().length_squared();
         let half_b = oc.dot(&r.direction());
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;
@@ -96,7 +96,7 @@ impl MovingSphere {
 impl Hittable for MovingSphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc = r.origin() - self.center(r.time());
-        let a = r.direction().dot(&r.direction());
+        let a = r.direction().length_squared();
         let half_b = oc.dot(&r.direction());
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;

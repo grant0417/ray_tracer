@@ -38,7 +38,7 @@ impl BVHNode {
                 }
             });
 
-            let mid = start + object_span/2;
+            let mid = start + object_span / 2;
 
             let left = Arc::new(BVHNode::new(objects, start, mid, time0, time1));
             let right = Arc::new(BVHNode::new(objects, mid, end, time0, time1));
@@ -81,7 +81,7 @@ impl Hittable for BVHNode {
     }
 
     fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut AABB) -> bool {
-        *output_box = self.aabb_box.clone();
+        *output_box = self.aabb_box;
         true
     }
 }

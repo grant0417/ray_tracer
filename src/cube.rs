@@ -4,7 +4,7 @@ use crate::material::Material;
 
 use std::sync::Arc;
 use crate::aarect::{XYRect, XZRect, YZRect};
-use crate::hittable::{Hittable, HitRecord};
+use crate::hittable::{Hittable, HitRecord, FlipFace};
 use crate::ray::Ray;
 use crate::aabb::AABB;
 
@@ -20,18 +20,18 @@ impl Cube {
 
         sides.add(Arc::new(XYRect::new(
             material.clone(), cube_min.x(), cube_max.x(), cube_min.y(), cube_max.y(), cube_max.z())));
-        sides.add(Arc::new(XYRect::new(
-            material.clone(), cube_min.x(), cube_max.x(), cube_min.y(), cube_max.y(), cube_min.z())));
+        sides.add(Arc::new(FlipFace::new(Arc::new(XYRect::new(
+            material.clone(), cube_min.x(), cube_max.x(), cube_min.y(), cube_max.y(), cube_min.z())))));
 
         sides.add(Arc::new(XZRect::new(
             material.clone(), cube_min.x(), cube_max.x(), cube_min.z(), cube_max.z(), cube_max.y())));
-        sides.add(Arc::new(XZRect::new(
-            material.clone(), cube_min.x(), cube_max.x(), cube_min.z(), cube_max.z(), cube_min.y())));
+        sides.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(
+            material.clone(), cube_min.x(), cube_max.x(), cube_min.z(), cube_max.z(), cube_min.y())))));
 
         sides.add(Arc::new(YZRect::new(
             material.clone(), cube_min.y(), cube_max.y(), cube_min.z(), cube_max.z(), cube_max.x())));
-        sides.add(Arc::new(YZRect::new(
-            material.clone(), cube_min.y(), cube_max.y(), cube_min.z(), cube_max.z(), cube_min.x())));
+        sides.add(Arc::new(FlipFace::new(Arc::new(YZRect::new(
+            material.clone(), cube_min.y(), cube_max.y(), cube_min.z(), cube_max.z(), cube_min.x())))));
 
         Cube { cube_min, cube_max, sides }
     }
@@ -42,7 +42,7 @@ impl Hittable for Cube {
         self.sides.hit(r, t_min, t_max, rec)
     }
 
-    fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool {
+    fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(&self.cube_min, &self.cube_max);
         true
     }

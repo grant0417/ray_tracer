@@ -1,7 +1,7 @@
 use crate::util::{clamp, random_double, random_double_range};
 
 use std::io::{Write};
-use std::ops::{Neg, Index, Add, Sub, Mul};
+use std::ops::{Neg, Index, Add, Sub, Mul, IndexMut};
 use std::io;
 use std::f64;
 use nalgebra::Vector3;
@@ -12,7 +12,6 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-
     pub fn new(x: f64, y: f64, z: f64 ) -> Self {
         Vec3{ v: Vector3::new(x, y, z) }
     }
@@ -77,6 +76,8 @@ impl Vec3 {
         Vec3 { v: self.v.normalize() }
     }
 
+    
+    
     pub fn random() -> Self {
         Vec3::new(random_double(), random_double(), random_double())
     }
@@ -132,19 +133,25 @@ impl Vec3 {
     }
 }
 
-impl Neg for Vec3 {
-    type Output = Vec3;
-
-    fn neg(self) -> Self::Output {
-        Vec3 { v: self.v.neg() }
-    }
-}
-
 impl Index<usize> for Vec3 {
     type Output = f64;
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.v[index]
+    }
+}
+
+impl IndexMut<usize> for Vec3 {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.v[index]
+    }
+}
+
+impl Neg for Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Self::Output {
+        Vec3 { v: self.v.neg() }
     }
 }
 

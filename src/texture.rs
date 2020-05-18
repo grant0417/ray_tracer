@@ -4,10 +4,11 @@ use crate::util::clamp;
 
 use image::GenericImageView;
 
-pub trait Texture: Sync + Send {
+pub trait Texture: Sync + Send + Clone {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3;
 }
 
+#[derive(Clone)]
 pub struct SolidTexture {
     color: Vec3,
 }
@@ -30,6 +31,7 @@ impl Texture for SolidTexture {
     }
 }
 
+#[derive(Clone)]
 pub struct CheckerTexture<T, U>
     where T: Texture, U: Texture {
     even: T,
@@ -58,6 +60,7 @@ impl<T, U> Texture for CheckerTexture<T, U>
     }
 }
 
+#[derive(Clone)]
 pub struct NoiseTexture {
     noise: Perlin,
     scale: f64,
@@ -76,6 +79,7 @@ impl Texture for NoiseTexture {
     }
 }
 
+#[derive(Clone)]
 pub struct ImageTexture {
     width: u32,
     height: u32,

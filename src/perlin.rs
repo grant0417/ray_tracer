@@ -3,6 +3,7 @@ use crate::vec3::Vec3;
 
 const POINT_COUNT: usize = 256;
 
+#[derive(Copy, Clone)]
 pub struct Perlin {
     ran_vec: [Vec3; POINT_COUNT],
     perm_x: [i32; POINT_COUNT],
@@ -30,9 +31,9 @@ impl Perlin {
     }
 
     pub fn noise(&self, point: &Vec3) -> f64 {
-        let mut u = point.x() - point.x().floor();
-        let mut v = point.y() - point.y().floor();
-        let mut w = point.z() - point.z().floor();
+        let u = point.x() - point.x().floor();
+        let v = point.y() - point.y().floor();
+        let w = point.z() - point.z().floor();
 
         let i = point.x().floor();
         let j = point.y().floor();
