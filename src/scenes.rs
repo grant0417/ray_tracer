@@ -5,15 +5,34 @@ use crate::texture::{SolidTexture, CheckerTexture, NoiseTexture, ImageTexture};
 use crate::util;
 use crate::vec3::Vec3;
 use crate::aarect::{XYRect, XZRect, YZRect};
-use crate::hittable::{FlipFace, Translate, RotateY};
+use crate::hittable::{FlipFace, Translate, RotateY, Hittable};
 use crate::cube::Cube;
 use crate::camera::Camera;
 use crate::constant_medium::ConstantMedium;
 use crate::bvh::BVHNode;
 
 use std::sync::Arc;
+use std::collections::HashMap;
 
-pub fn book1_scene() -> HittableList {
+lazy_static! {
+    pub static ref SCENE_MAP: HashMap<String, fn(usize, usize) -> Scene> = {
+        let mut map = HashMap::new();
+        map.insert("Book 1".to_string(), book1_scene as fn(usize, usize) -> Scene);
+        map.insert("Book 2".to_string(), book2_scene as fn(usize, usize) -> Scene);
+        map.insert("Cornell Box".to_string(), cornell_scene as fn(usize, usize) -> Scene);
+        map.insert("Cornell Box with Cubes".to_string(), cornell_cubes_scene as fn(usize, usize) -> Scene);
+        map
+    };
+}
+
+pub struct Scene {
+    pub objects: HittableList,
+    pub camera: Camera,
+    pub background_color: Vec3,
+    pub lights: Arc<dyn Hittable>,
+}
+
+pub fn book1_objects() -> HittableList {
     let mut world = HittableList::new();
 
     world.add(Arc::new(Sphere::new(
@@ -84,7 +103,37 @@ pub fn book1_scene() -> HittableList {
     world
 }
 
-pub fn book2_scene() -> HittableList {
+pub fn book1_camera(width: usize, height: usize) -> Camera {
+    let aspect_ratio = width as f64 / height as f64;
+    let lookfrom = Vec3::new(12.0, 2.0, 3.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
+    let vfov = 20.0;
+    Camera::new_timed(
+        lookfrom,
+        lookat,
+        vup,
+        vfov,
+        aspect_ratio,
+        aperture,
+        dist_to_focus,
+        0.0,
+        1.0,
+    )
+}
+
+pub fn book1_scene(width: usize, height: usize) -> Scene {
+    Scene {
+        objects: book1_objects(),
+        camera: book1_camera(width, height),
+        background_color: Vec3::new(0xdd as f64 / 255.0, 0xec as f64 / 255.0, 0xff as f64 / 255.0),
+        lights: Arc::new(HittableList::new()),
+    }
+}
+
+pub fn book2_objects() -> HittableList {
     let mut cubes1 = HittableList::new();
 
     let ground = Arc::new(Lambertian::new(SolidTexture::new(0.48, 0.83, 0.53)));
@@ -153,6 +202,15 @@ pub fn book2_scene() -> HittableList {
     objects
 }
 
+fn book2_scene(width: usize, height: usize) -> Scene {
+    Scene {
+        objects: book2_objects(),
+        camera: book1_camera(width, height),
+        background_color: Vec3::new(0.0, 0.0, 0.0),
+        lights: Arc::new(HittableList::new()),
+    }
+}
+
 fn two_spheres() -> HittableList {
     let mut objects = HittableList::new_with_capacity(2);
 
@@ -189,7 +247,7 @@ fn simple_light() -> HittableList {
 
     let difflight = Arc::new(DiffuseLight::new(SolidTexture::new(4.0, 4.0, 4.0)));
     objects.add(Arc::new(Sphere::new(&Vec3::new(0.0, 7.0, 0.0), 2.0, difflight.clone())));
-    objects.add(Arc::new(XYRect::new(difflight, 3.0, 5.0, 1.0, 3.0, -2.0, )));
+    objects.add(Arc::new(XYRect::new(difflight, 3.0, 5.0, 1.0, 3.0, -2.0)));
 
     objects
 }
@@ -197,33 +255,34 @@ fn simple_light() -> HittableList {
 pub fn cornell_box() -> HittableList {
     let mut objects = HittableList::new();
 
+    let light = Arc::new(DiffuseLight::new(SolidTexture::new(15.0, 15.0, 15.0)));
     let red = Arc::new(Lambertian::new(SolidTexture::new(0.65, 0.05, 0.05)));
     let white = Arc::new(Lambertian::new(SolidTexture::new(0.73, 0.73, 0.73)));
     let green = Arc::new(Lambertian::new(SolidTexture::new(0.12, 0.45, 0.15)));
-    let light = Arc::new(DiffuseLight::new(SolidTexture::new(15.0, 15.0, 15.0)));
 
-    objects.add(Arc::new(FlipFace::new(Arc::new(YZRect::new(green.clone(), 0.0, 555.0, 0.0, 555.0, 555.0)))));
+    objects.add(Arc::new(FlipFace::new(Arc::new(YZRect::new(green, 0.0, 555.0, 0.0, 555.0, 555.0)))));
     objects.add(Arc::new(YZRect::new(red, 0.0, 555.0, 0.0, 555.0, 0.0)));
-    objects.add(Arc::new(XZRect::new(light, 213.0, 343.0, 227.0, 332.0, 554.0)));
     objects.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(white.clone(), 0.0, 555.0, 0.0, 555.0, 0.0)))));
     objects.add(Arc::new(XZRect::new(white.clone(), 0.0, 555.0, 0.0, 555.0, 555.0)));
-    objects.add(Arc::new(FlipFace::new(Arc::new(XYRect::new(white.clone(), 0.0, 555.0, 0.0, 555.0, 555.0)))));
+    objects.add(Arc::new(FlipFace::new(Arc::new(XYRect::new(white, 0.0, 555.0, 0.0, 555.0, 555.0)))));
+    objects.add(Arc::new(FlipFace::new(Arc::new(XZRect::new(light, 213.0, 343.0, 227.0, 332.0, 554.0)))));
+
 
     objects
 }
 
 pub fn cornell_with_cubes() -> HittableList {
-
     let mut objects = cornell_box();
 
     let white = Arc::new(Lambertian::new(SolidTexture::new(0.73, 0.73, 0.73)));
+    let aluminium = Arc::new(Metal::new(&Vec3::new(0.8, 0.85, 0.88), 0.0));
 
-    let cube1 = Cube::new(Vec3::zero(), Vec3::new(165.0, 330.0, 165.0), white.clone());
+    let cube1 = Cube::new(Vec3::zero(), Vec3::new(165.0, 330.0, 165.0), aluminium);
     let cube1 = RotateY::new(cube1, 15.0);
     let cube1 = Arc::new(Translate::new(cube1, Vec3::new(265.0, 0.0, 295.0)));
     objects.add(cube1);
 
-    let cube2 = Cube::new(Vec3::zero(), Vec3::new(165.0, 165.0, 165.0), white.clone());
+    let cube2 = Cube::new(Vec3::zero(), Vec3::new(165.0, 165.0, 165.0), white);
     let cube2 = RotateY::new(cube2, -18.0);
     let cube2 = Arc::new(Translate::new(cube2, Vec3::new(130.0, 0.0, 65.0)));
     objects.add(cube2);
@@ -232,7 +291,6 @@ pub fn cornell_with_cubes() -> HittableList {
 }
 
 pub fn cornell_with_smoke() -> HittableList {
-
     let mut objects = HittableList::new();
 
     let red = Arc::new(Lambertian::new(SolidTexture::new(0.65, 0.05, 0.05)));
@@ -278,6 +336,36 @@ pub fn cornell_camera(width: usize, height: usize) -> Camera {
         aperture,
         dist_to_focus,
         0.0,
-        1.0
+        1.0,
     )
+}
+
+pub fn cornell_scene(width: usize, height: usize) -> Scene {
+    let mut lights = HittableList::new();
+    let mat = Arc::new(Lambertian::new(SolidTexture::from(Vec3::zero())));
+    lights.add(Arc::new(XZRect::new(mat, 213.0, 343.0, 227.0, 332.0, 554.0)));
+
+    let world = cornell_box();
+
+    Scene {
+        objects: world,
+        camera: cornell_camera(width, height),
+        background_color: Vec3::zero(),
+        lights: Arc::new(lights),
+    }
+}
+
+pub fn cornell_cubes_scene(width: usize, height: usize) -> Scene {
+    let mut lights = HittableList::new();
+    let mat = Arc::new(Lambertian::new(SolidTexture::from(Vec3::zero())));
+    lights.add(Arc::new(XZRect::new(mat, 213.0, 343.0, 227.0, 332.0, 554.0)));
+
+    let world = cornell_with_cubes();
+
+    Scene {
+        objects: world,
+        camera: cornell_camera(width, height),
+        background_color: Vec3::zero(),
+        lights: Arc::new(lights),
+    }
 }

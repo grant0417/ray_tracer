@@ -16,8 +16,10 @@ impl AABB {
     }
 
     pub fn new_max() -> Self {
-        AABB { min: Vec3::new(f64::INFINITY, f64::INFINITY, f64::INFINITY),
-            max: Vec3::new(f64::NEG_INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY)}
+        AABB {
+            min: Vec3::new(f64::INFINITY, f64::INFINITY, f64::INFINITY),
+            max: Vec3::new(f64::NEG_INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY),
+        }
     }
 
     pub fn surrounding_box(&self, other: &AABB) -> Self {

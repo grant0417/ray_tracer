@@ -21,7 +21,7 @@ impl Mesh {
         let name = models[0].name.clone();
         eprintln!("Importing mesh '{}'...", &name);
 
-        let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len()/3);
+        let mut list = HittableList::new_with_capacity(models[0].mesh.indices.len() / 3);
 
         for (_, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
@@ -64,14 +64,14 @@ impl Mesh {
                         n1,
                         n2,
                         n3,
-                        material.clone()
+                        material.clone(),
                     )))
                 } else {
                     list.add(Arc::new(Triangle::new_flat(
                         p1.scale(scale) + *center,
                         p2.scale(scale) + *center,
                         p3.scale(scale) + *center,
-                        material.clone()
+                        material.clone(),
                     )))
                 }
             }
@@ -79,7 +79,7 @@ impl Mesh {
 
         eprintln!("Mesh '{}' imported with {} faces.", &name, list.objects.len());
 
-        let mesh = Mesh{ name, list: BVHNode::from_list(&mut list, 0.0, 0.0) };
+        let mesh = Mesh { name, list: BVHNode::from_list(&mut list, 0.0, 0.0) };
 
         eprintln!("Mesh '{}' bounded.", &mesh.name);
 

@@ -9,7 +9,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub enum Norm {
     Smooth(Vec3, Vec3, Vec3),
-    Flat(Vec3)
+    Flat(Vec3),
 }
 
 #[derive(Clone)]
@@ -20,7 +20,7 @@ pub struct Triangle {
     e1: Vec3,
     e2: Vec3,
     norm: Norm,
-    material: Arc<dyn Material>
+    material: Arc<dyn Material>,
 }
 
 impl Triangle {
@@ -35,7 +35,7 @@ impl Triangle {
             e1,
             e2,
             norm: Norm::Flat(norm),
-            material
+            material,
         }
     }
 
@@ -49,7 +49,7 @@ impl Triangle {
             e1,
             e2,
             norm: Norm::Smooth(n1, n2, n3),
-            material
+            material,
         }
     }
 }
@@ -101,9 +101,9 @@ impl Hittable for Triangle {
         let miny = self.p1.y().min(self.p2.y().min(self.p3.y()));
         let minz = self.p1.z().min(self.p2.z().min(self.p3.z()));
 
-        let maxx= self.p1.x().max(self.p2.x().max(self.p3.x()));
-        let maxy= self.p1.y().max(self.p2.y().max(self.p3.y()));
-        let maxz= self.p1.z().max(self.p2.z().max(self.p3.z()));
+        let maxx = self.p1.x().max(self.p2.x().max(self.p3.x()));
+        let maxy = self.p1.y().max(self.p2.y().max(self.p3.y()));
+        let maxz = self.p1.z().max(self.p2.z().max(self.p3.z()));
 
         output_box.min = Vec3::new(minx, miny, minz);
         output_box.max = Vec3::new(maxx, maxy, maxz);

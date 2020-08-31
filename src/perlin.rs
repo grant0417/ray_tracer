@@ -17,7 +17,8 @@ impl Perlin {
             ran_vec: [Vec3::zero(); POINT_COUNT],
             perm_x: [0; POINT_COUNT],
             perm_y: [0; POINT_COUNT],
-            perm_z: [0; POINT_COUNT] };
+            perm_z: [0; POINT_COUNT],
+        };
 
         for i in perlin.ran_vec.iter_mut() {
             *i = Vec3::random_range(-1.0, 1.0)
@@ -45,7 +46,7 @@ impl Perlin {
             for dj in 0..2 {
                 for dk in 0..2 {
                     c[di][dj][dk] = self.ran_vec[(
-                            self.perm_x[(i + di as f64) as usize & 255] ^
+                        self.perm_x[(i + di as f64) as usize & 255] ^
                             self.perm_y[(j + dj as f64) as usize & 255] ^
                             self.perm_z[(k + dk as f64) as usize & 255]) as usize];
                 }
@@ -83,7 +84,7 @@ impl Perlin {
     }
 
     fn permute(p: &mut [i32; POINT_COUNT], n: usize) {
-        for i in (0..n-1).rev() {
+        for i in (0..n - 1).rev() {
             let target = random_int_range(0, (i + 1) as i64) as usize;
             p.swap(i, target);
         }
@@ -100,9 +101,9 @@ impl Perlin {
                 for k in 0..2 {
                     let weight_v = Vec3::new(u - i as f64, v - j as f64, w - k as f64);
                     accum += (i as f64 * uu + (1.0 - i as f64) * (1.0 - uu)) *
-                             (j as f64 * vv + (1.0 - j as f64) * (1.0 - vv)) *
-                             (k as f64 * ww + (1.0 - k as f64) * (1.0 - ww)) *
-                             c[i][j][k].dot(&weight_v);
+                        (j as f64 * vv + (1.0 - j as f64) * (1.0 - vv)) *
+                        (k as f64 * ww + (1.0 - k as f64) * (1.0 - ww)) *
+                        c[i][j][k].dot(&weight_v);
                 }
             }
         }

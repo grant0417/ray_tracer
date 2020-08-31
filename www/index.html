@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Rust Ray Tracer</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  </head>
+  <body class="bg-dark">
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.<br></noscript>
+
+    <div class="container-fluid">
+      <div class="input-group my-2">
+        <div class="input-group-prepend">
+          <label class="input-group-text" for="scene">Scene</label>
+        </div>
+        <select name="scene" id="scene" class="custom-select" style="min-width: 14em;">
+        </select>
+
+        <div class="input-group-prepend">
+          <label class="input-group-text" for="width">Width</label>
+        </div>
+        <input type="number" id="width" name="width" class="form-control" style="min-width: 5em;" value="500">
+
+        <div class="input-group-prepend">
+          <label class="input-group-text" for="height">Height</label>
+        </div>
+        <input type="number" id="height" name="height" class="form-control" style="min-width: 5em" value="500">
+
+        <div class="input-group-prepend">
+          <label class="input-group-text" for="samples">Samples</label>
+        </div>
+        <input type="number" id="samples" name="samples" class="form-control" style="min-width: 3em;" value="4">
+
+        <div class="input-group-append">
+          <input type="button" id="render-button" class="btn btn-primary" value="Render">
+        </div>
+      </div>
+      <canvas width="1000" height="1" id="progress" style="width: 100%; height: 1em; border-radius: .35em;"></canvas>
+    </div>
+
+    <div class="container my-1">
+      <canvas id="render-canvas" class="border" style="width: 100%; max-height: 70%;"></canvas>
+    </div>
+
+    <div class="container my-1">
+      <p class="text-light">Create by <a href="https://github.com/grant0417">Grant Gurvis</a><br>Using Rust 🦀 and WebAssembly 🕸<br><a href="https://github.com/grant0417/ray_tracer">Github</a></p>
+    </div>
+
+    <script src="./bootstrap.js"></script>
+  </body>
+</html>

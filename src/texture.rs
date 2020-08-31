@@ -50,8 +50,8 @@ impl<T, U> Texture for CheckerTexture<T, U>
     where T: Texture, U: Texture {
     fn value(&self, u: f64, v: f64, p: &Vec3) -> Vec3 {
         let sines = (10.0 * p.x()).sin()
-                       * (10.0 * p.y()).sin()
-                       * (10.0 * p.z()).sin();
+            * (10.0 * p.y()).sin()
+            * (10.0 * p.z()).sin();
         if sines < 0.0 {
             self.odd.value(u, v, p)
         } else {
@@ -75,7 +75,7 @@ impl NoiseTexture {
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: &Vec3) -> Vec3 {
         Vec3::new(1.0, 1.0, 1.0)
-            .scale(0.5 * (1.0 + (self.scale * p.z() + 10.0 * self.noise.turb( &p, 7)).sin()))
+            .scale(0.5 * (1.0 + (self.scale * p.z() + 10.0 * self.noise.turb(&p, 7)).sin()))
     }
 }
 
@@ -92,7 +92,7 @@ impl ImageTexture {
         ImageTexture {
             width: img.dimensions().0,
             height: img.dimensions().1,
-            image: img
+            image: img,
         }
     }
 }
@@ -114,6 +114,5 @@ impl Texture for ImageTexture {
         Vec3::new(color_scale * pixel.0[0] as f64,
                   color_scale * pixel.0[1] as f64,
                   color_scale * pixel.0[2] as f64)
-
     }
 }

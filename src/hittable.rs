@@ -24,11 +24,11 @@ impl HitRecord {
             p: Vec3::zero(),
             normal: Vec3::zero(),
             mat: Arc::new(Lambertian::new(
-                 SolidTexture::new(0.0, 0.0, 0.0))),
+                SolidTexture::new(0.0, 0.0, 0.0))),
             t: 0.0,
             u: 0.0,
             v: 0.0,
-            front_face: false
+            front_face: false,
         }
     }
 
@@ -41,6 +41,12 @@ impl HitRecord {
 pub trait Hittable: Sync + Send {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
     fn bounding_box(&self, t0: f64, t1: f64, output_box: &mut AABB) -> bool;
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        0.0
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        Vec3::new(1.0, 0.0, 0.0)
+    }
 }
 
 pub struct Translate<T>
@@ -168,7 +174,6 @@ impl<T> Hittable for RotateY<T>
     fn bounding_box(&self, _t0: f64, _t1: f64, output_box: &mut AABB) -> bool {
         *output_box = self.bbox;
         self.has_box
-
     }
 }
 

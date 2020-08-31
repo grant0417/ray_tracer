@@ -10,7 +10,7 @@ use crate::vec3::Vec3;
 use crate::texture::Texture;
 
 pub struct ConstantMedium<T>
-    where T: Texture{
+    where T: Texture {
     boundary: Arc<dyn Hittable>,
     phase_function: Isotropic<T>,
     neg_inv_density: f64,
@@ -36,7 +36,7 @@ impl<T: 'static> Hittable for ConstantMedium<T>
             return false;
         }
 
-        if !self.boundary.hit(r, rec1.t+0.001, f64::INFINITY, &mut rec2) {
+        if !self.boundary.hit(r, rec1.t + 0.001, f64::INFINITY, &mut rec2) {
             return false;
         }
 

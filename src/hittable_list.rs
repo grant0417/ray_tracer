@@ -4,6 +4,8 @@ use crate::aabb::AABB;
 use crate::vec3::Vec3;
 
 use std::sync::Arc;
+use crate::util::random_int_range;
+use rand::prelude::SliceRandom;
 
 #[derive(Clone)]
 pub struct HittableList {
@@ -58,5 +60,25 @@ impl Hittable for HittableList {
         }
 
         true
+    }
+
+    fn pdf_value(&self, o: &Vec3, v: &Vec3) -> f64 {
+        let weight = 1.0 / self.objects.len() as f64;
+
+        let mut sum = 0.0;
+
+        for object in &self.objects {
+            sum += weight * object.pdf_value(o, v);
+        }
+
+        sum
+    }
+
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        match self.objects.choose(&mut rng) {
+            None => { Vec3::random() }
+            Some(s) => { s.random(o) }
+        }
     }
 }

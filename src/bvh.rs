@@ -16,18 +16,18 @@ pub struct BVHNode {
 
 impl BVHNode {
     pub fn new(objects: &mut Vec<Arc<dyn Hittable>>,
-           start: usize, end: usize, time0: f64, time1: f64) -> Self {
-        let axis = random_int_range(0,3) as usize;
+               start: usize, end: usize, time0: f64, time1: f64) -> Self {
+        let axis = random_int_range(0, 3) as usize;
 
         let object_span = end - start;
 
         let (left, right) = if object_span == 1 {
             (objects[start].clone(), objects[start].clone())
         } else if object_span == 2 {
-            if box_compare(objects[start].clone(), objects[start+1].clone(), axis) {
-                (objects[start].clone(), objects[start+1].clone())
+            if box_compare(objects[start].clone(), objects[start + 1].clone(), axis) {
+                (objects[start].clone(), objects[start + 1].clone())
             } else {
-                (objects[start+1].clone(), objects[start].clone())
+                (objects[start + 1].clone(), objects[start].clone())
             }
         } else {
             objects[start..end].par_sort_by(|a, b| {

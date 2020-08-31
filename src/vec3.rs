@@ -12,12 +12,12 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64 ) -> Self {
-        Vec3{ v: Vector3::new(x, y, z) }
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Vec3 { v: Vector3::new(x, y, z) }
     }
 
     pub fn zero() -> Self {
-        Vec3{ v: Vector3::new(0.0, 0.0, 0.0) }
+        Vec3 { v: Vector3::new(0.0, 0.0, 0.0) }
     }
 
     pub fn x(&self) -> f64 { self.v[0] }
@@ -36,20 +36,35 @@ impl Vec3 {
     pub fn write_color<T: Write>(&self, writer: &mut T, samples_per_pixel: usize) -> io::Result<()> {
         let color = self.return_color(samples_per_pixel);
         writer.write_all(format!("{} {} {}\n",
-            color.0, color.1, color.2
+                                 color.0, color.1, color.2
         ).as_bytes())?;
         io::Result::Ok(())
     }
 
-    pub fn return_color(&self, samples_per_pixel: usize) -> (i32, i32, i32) {
+    pub fn return_color(&self, samples_per_pixel: usize) -> (u8, u8, u8) {
         let scale = 1.0 / samples_per_pixel as f64;
         let v = self.scale(scale).sqrt();
-        let r = v.x();
-        let g = v.y();
-        let b = v.z();
-        ((256.0 * clamp(r, 0.0, 0.999)) as i32,
-         (256.0 * clamp(g, 0.0, 0.999)) as i32,
-         (256.0 * clamp(b, 0.0, 0.999)) as i32,)
+
+        let mut r = v.x();
+        let mut g = v.y();
+        let mut b = v.z();
+
+        if r.is_nan() {
+            r = 0.0;
+            eprintln!("NAN")
+        }
+        if g.is_nan() {
+            g = 0.0;
+            eprintln!("NAN")
+        }
+        if b.is_nan() {
+            b = 0.0;
+            eprintln!("NAN")
+        }
+
+        ((256.0 * clamp(r, 0.0, 0.999)) as u8,
+         (256.0 * clamp(g, 0.0, 0.999)) as u8,
+         (256.0 * clamp(b, 0.0, 0.999)) as u8, )
     }
 
     pub fn scale(&self, scalar: f64) -> Self {
@@ -57,7 +72,7 @@ impl Vec3 {
     }
 
     pub fn div(&self, scalar: f64) -> Self {
-        Vec3 { v: self.v.scale(1.0/scalar) }
+        Vec3 { v: self.v.scale(1.0 / scalar) }
     }
 
     pub fn dot(&self, rhs: &Self) -> f64 {
@@ -69,15 +84,14 @@ impl Vec3 {
     }
 
     pub fn sqrt(&self) -> Self {
-        Vec3::new( self.x().sqrt(), self.y().sqrt(), self.z().sqrt())
+        Vec3::new(self.x().sqrt(), self.y().sqrt(), self.z().sqrt())
     }
 
     pub fn unit_vector(&self) -> Self {
         Vec3 { v: self.v.normalize() }
     }
 
-    
-    
+
     pub fn random() -> Self {
         Vec3::new(random_double(), random_double(), random_double())
     }
@@ -159,7 +173,7 @@ impl Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Vec3{ v: self.v + rhs.v }
+        Vec3 { v: self.v + rhs.v }
     }
 }
 
@@ -167,7 +181,7 @@ impl Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Vec3{ v: self.v - rhs.v }
+        Vec3 { v: self.v - rhs.v }
     }
 }
 
