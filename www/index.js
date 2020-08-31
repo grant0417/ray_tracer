@@ -1,4 +1,4 @@
-import * as wasm from "ray_tracer";
+import * as wasm from "ray_tracer/ray_tracer";
 
 wasm.init_panic_hook();
 

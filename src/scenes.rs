@@ -17,8 +17,8 @@ use std::collections::HashMap;
 lazy_static! {
     pub static ref SCENE_MAP: HashMap<String, fn(usize, usize) -> Scene> = {
         let mut map = HashMap::new();
-        map.insert("Book 1".to_string(), book1_scene as fn(usize, usize) -> Scene);
-        map.insert("Book 2".to_string(), book2_scene as fn(usize, usize) -> Scene);
+        // map.insert("Book 1".to_string(), book1_scene as fn(usize, usize) -> Scene);
+        // map.insert("Book 2".to_string(), book2_scene as fn(usize, usize) -> Scene);
         map.insert("Cornell Box".to_string(), cornell_scene as fn(usize, usize) -> Scene);
         map.insert("Cornell Box with Cubes".to_string(), cornell_cubes_scene as fn(usize, usize) -> Scene);
         map
