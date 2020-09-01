@@ -1,4 +1,4 @@
-(window["webpackJsonp"] = window["webpackJsonp"] || []).push([[0],{
+self["webpackChunk"]([0],{
 
 /***/ "../pkg sync recursive":
 /*!*******************!*\
@@ -46,18 +46,6 @@ eval("\"use strict\";\n// Instantiate WebAssembly module\nvar wasmExports = __we
 
 /***/ }),
 
-/***/ "./index.js":
-/*!******************!*\
-  !*** ./index.js ***!
-  \******************/
-/*! no exports provided */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var ray_tracer_ray_tracer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ray_tracer/ray_tracer */ \"../pkg/ray_tracer.js\");\n/* harmony import */ var _render_worker__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render.worker */ \"./render.worker.js\");\n\n\n\nray_tracer_ray_tracer__WEBPACK_IMPORTED_MODULE_0__[\"init_panic_hook\"]();\n\nconst width_input = document.getElementById('width');\nconst height_input = document.getElementById('height');\nconst samples_input = document.getElementById('samples');\nconst render_button = document.getElementById('render-button');\nconst scene_select = document.getElementById('scene');\nconst progress_bar = document.getElementById('progress');\nconst loader = document.getElementById('loader');\n\nconst scenes = ray_tracer_ray_tracer__WEBPACK_IMPORTED_MODULE_0__[\"get_scenes\"]();\n\nfor (let i = 0; i < scenes.length; i++) {\n    const option = document.createElement(\"option\");\n    option.text = scenes[i];\n    scene_select.add(option, scene_select[i])\n}\n\nscene_select.value = \"Cornell Box with Cubes\"\n\nconst canvas = document.getElementById(\"render-canvas\");\ncanvas.height = height_input.value;\ncanvas.width = width_input.value;\n\nwidth_input.addEventListener(\"input\", event => {\n    canvas.width = event.target.value;\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n});\n\nheight_input.addEventListener(\"input\", event => {\n    canvas.height = event.target.value;\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n});\n\nconst ctx = canvas.getContext('2d');\n\nctx.fillStyle = 'black';\nctx.fillRect(0, 0, canvas.width, canvas.height);\n\nfunction render_image(scene, width, height, samples) {\n    const array = new Uint8ClampedArray(ray_tracer_ray_tracer__WEBPACK_IMPORTED_MODULE_0__[\"render_image_array\"](scene, width, height, samples));\n    return new ImageData(array, canvas.width);\n}\n\nfunction rendering_mode() {\n    loader.classList.add(\"loader\");\n    width_input.disabled = true;\n    height_input.disabled = true;\n    samples_input.disabled = true;\n    scene_select.disabled = true;\n}\n\nfunction normal_mode() {\n    loader.classList.remove(\"loader\");\n    width_input.disabled = false;\n    height_input.disabled = false;\n    samples_input.disabled = false;\n    scene_select.disabled = false;\n}\n\nlet worker = new _render_worker__WEBPACK_IMPORTED_MODULE_1__[\"default\"](\"render.worker.js\");\n\nrender_button.addEventListener(\"click\", () => {\n    if (render_button.value === \"Render\") {\n        rendering_mode()\n        if (window.Worker) {\n            //render_button.value = \"Stop\";\n            //render_button.classList.add(\"bg-danger\")\n            render_button.disabled = true;\n            worker.postMessage([scene_select.value, canvas.width, canvas.height, samples_input.value]);\n        } else {\n            render_button.disabled = true;\n            ctx.putImageData(render_image(scene_select.value, canvas.width, canvas.height, samples_input.value), 0, 0);\n            render_button.disabled = false;\n            normal_mode()\n        }\n    } else {\n        worker.terminate();\n        worker = new _render_worker__WEBPACK_IMPORTED_MODULE_1__[\"default\"](\"render.worker.js\");\n        render_button.value = \"Render\";\n        render_button.classList.remove(\"bg-danger\")\n        render_button.disabled = false;\n        normal_mode()\n    }\n});\n\nworker.onmessage = (e) => {\n    ctx.putImageData(e.data, 0, 0)\n    render_button.value = \"Render\";\n    render_button.classList.remove(\"bg-danger\")\n    render_button.disabled = false;\n    normal_mode()\n}\n\nconst progress_ctx = progress_bar.getContext('2d');\nprogress_ctx.fillStyle = '#007bff';\nprogress_ctx.fillRect(0, 0, 1000, 1)\n\n//# sourceURL=webpack:///./index.js?");
-
-/***/ }),
-
 /***/ "./node_modules/webpack/buildin/harmony-module.js":
 /*!*******************************************!*\
   !*** (webpack)/buildin/harmony-module.js ***!
@@ -67,18 +55,6 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var ray_
 
 eval("module.exports = function(originalModule) {\n\tif (!originalModule.webpackPolyfill) {\n\t\tvar module = Object.create(originalModule);\n\t\t// module.parent = undefined by default\n\t\tif (!module.children) module.children = [];\n\t\tObject.defineProperty(module, \"loaded\", {\n\t\t\tenumerable: true,\n\t\t\tget: function() {\n\t\t\t\treturn module.l;\n\t\t\t}\n\t\t});\n\t\tObject.defineProperty(module, \"id\", {\n\t\t\tenumerable: true,\n\t\t\tget: function() {\n\t\t\t\treturn module.i;\n\t\t\t}\n\t\t});\n\t\tObject.defineProperty(module, \"exports\", {\n\t\t\tenumerable: true\n\t\t});\n\t\tmodule.webpackPolyfill = 1;\n\t}\n\treturn module;\n};\n\n\n//# sourceURL=webpack:///(webpack)/buildin/harmony-module.js?");
 
-/***/ }),
-
-/***/ "./render.worker.js":
-/*!**************************!*\
-  !*** ./render.worker.js ***!
-  \**************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (function() {\n  return new Worker(__webpack_require__.p + \"bootstrap.worker.js\");\n});\n\n\n//# sourceURL=webpack:///./render.worker.js?");
-
 /***/ })
 
-}]);
+});
