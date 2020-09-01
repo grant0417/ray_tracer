@@ -1,4 +1,5 @@
 import * as wasm from "ray_tracer/ray_tracer";
+import Worker from './render.worker'
 
 wasm.init_panic_hook();
 
@@ -8,6 +9,7 @@ const samples_input = document.getElementById('samples');
 const render_button = document.getElementById('render-button');
 const scene_select = document.getElementById('scene');
 const progress_bar = document.getElementById('progress');
+const loader = document.getElementById('loader');
 
 const scenes = wasm.get_scenes();
 
@@ -38,17 +40,60 @@ const ctx = canvas.getContext('2d');
 ctx.fillStyle = 'black';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function render_image() {
-    const array = new Uint8ClampedArray(wasm.render_image_array(scene_select.value, canvas.width, canvas.height, samples_input.value));
-    const image = new ImageData(array, canvas.width);
-    ctx.putImageData(image, 0, 0);
+function render_image(scene, width, height, samples) {
+    const array = new Uint8ClampedArray(wasm.render_image_array(scene, width, height, samples));
+    return new ImageData(array, canvas.width);
 }
 
+function rendering_mode() {
+    loader.classList.add("loader");
+    width_input.disabled = true;
+    height_input.disabled = true;
+    samples_input.disabled = true;
+    scene_select.disabled = true;
+}
+
+function normal_mode() {
+    loader.classList.remove("loader");
+    width_input.disabled = false;
+    height_input.disabled = false;
+    samples_input.disabled = false;
+    scene_select.disabled = false;
+}
+
+let worker = new Worker("render.worker.js");
+
 render_button.addEventListener("click", () => {
-    render_button.disabled = true;
-    render_image();
-    render_button.disabled = false;
+    if (render_button.value === "Render") {
+        rendering_mode()
+        if (window.Worker) {
+            //render_button.value = "Stop";
+            //render_button.classList.add("bg-danger")
+            render_button.disabled = true;
+            worker.postMessage([scene_select.value, canvas.width, canvas.height, samples_input.value]);
+        } else {
+            render_button.disabled = true;
+            ctx.putImageData(render_image(scene_select.value, canvas.width, canvas.height, samples_input.value), 0, 0);
+            render_button.disabled = false;
+            normal_mode()
+        }
+    } else {
+        worker.terminate();
+        worker = new Worker("render.worker.js");
+        render_button.value = "Render";
+        render_button.classList.remove("bg-danger")
+        render_button.disabled = false;
+        normal_mode()
+    }
 });
+
+worker.onmessage = (e) => {
+    ctx.putImageData(e.data, 0, 0)
+    render_button.value = "Render";
+    render_button.classList.remove("bg-danger")
+    render_button.disabled = false;
+    normal_mode()
+}
 
 const progress_ctx = progress_bar.getContext('2d');
 progress_ctx.fillStyle = '#007bff';

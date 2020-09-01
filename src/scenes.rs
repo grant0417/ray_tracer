@@ -21,6 +21,8 @@ lazy_static! {
         // map.insert("Book 2".to_string(), book2_scene as fn(usize, usize) -> Scene);
         map.insert("Cornell Box".to_string(), cornell_scene as fn(usize, usize) -> Scene);
         map.insert("Cornell Box with Cubes".to_string(), cornell_cubes_scene as fn(usize, usize) -> Scene);
+        map.insert("Cornell Box with Metal Cube".to_string(), cornell_metal_cube_scene as fn(usize, usize) -> Scene);
+        map.insert("Cornell Box with Glass Sphere (SLOW)".to_string(), cornell_metal_cube_scene as fn(usize, usize) -> Scene);
         map
     };
 }
@@ -275,6 +277,24 @@ pub fn cornell_with_cubes() -> HittableList {
     let mut objects = cornell_box();
 
     let white = Arc::new(Lambertian::new(SolidTexture::new(0.73, 0.73, 0.73)));
+
+    let cube1 = Cube::new(Vec3::zero(), Vec3::new(165.0, 330.0, 165.0), white.clone());
+    let cube1 = RotateY::new(cube1, 15.0);
+    let cube1 = Arc::new(Translate::new(cube1, Vec3::new(265.0, 0.0, 295.0)));
+    objects.add(cube1);
+
+    let cube2 = Cube::new(Vec3::zero(), Vec3::new(165.0, 165.0, 165.0), white);
+    let cube2 = RotateY::new(cube2, -18.0);
+    let cube2 = Arc::new(Translate::new(cube2, Vec3::new(130.0, 0.0, 65.0)));
+    objects.add(cube2);
+
+    objects
+}
+
+pub fn cornell_with_metal_cube() -> HittableList {
+    let mut objects = cornell_box();
+
+    let white = Arc::new(Lambertian::new(SolidTexture::new(0.73, 0.73, 0.73)));
     let aluminium = Arc::new(Metal::new(&Vec3::new(0.8, 0.85, 0.88), 0.0));
 
     let cube1 = Cube::new(Vec3::zero(), Vec3::new(165.0, 330.0, 165.0), aluminium);
@@ -361,6 +381,21 @@ pub fn cornell_cubes_scene(width: usize, height: usize) -> Scene {
     lights.add(Arc::new(XZRect::new(mat, 213.0, 343.0, 227.0, 332.0, 554.0)));
 
     let world = cornell_with_cubes();
+
+    Scene {
+        objects: world,
+        camera: cornell_camera(width, height),
+        background_color: Vec3::zero(),
+        lights: Arc::new(lights),
+    }
+}
+
+pub fn cornell_metal_cube_scene(width: usize, height: usize) -> Scene {
+    let mut lights = HittableList::new();
+    let mat = Arc::new(Lambertian::new(SolidTexture::from(Vec3::zero())));
+    lights.add(Arc::new(XZRect::new(mat, 213.0, 343.0, 227.0, 332.0, 554.0)));
+
+    let world = cornell_with_metal_cube();
 
     Scene {
         objects: world,

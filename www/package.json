@@ -31,6 +31,7 @@
     "ray_tracer": "file:../pkg",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.5"
+    "webpack-dev-server": "^3.1.5",
+    "worker-loader": "^3.0.2"
   }
 }

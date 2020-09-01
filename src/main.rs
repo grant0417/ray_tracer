@@ -62,7 +62,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .template("{wide_bar} {percent}% Elapsed: {elapsed_precise} Remaining: {eta_precise}"));
     render_bar.set_draw_delta((total / 1000) as u64);
 
-    let colors = render_scene("Cornell Box", width, height, samples)?;
+    let colors = render_scene("Cornell Box with Metal Cube", width, height, samples)?;
 
     render_bar.finish();
 

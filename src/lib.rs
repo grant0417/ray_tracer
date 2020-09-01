@@ -94,7 +94,9 @@ pub fn render_scene(scene: &str, width: usize, height: usize, samples: usize) ->
                     let u = (x as f64 + util::random_double()) / width as f64;
                     let v = (y as f64 + util::random_double()) / height as f64;
                     let r = scene.camera.get_ray(u, v);
-                    color = color + ray_color(&r, &scene.background_color, &scene.objects, scene.lights.clone(), MAX_DEPTH);
+                    let ray_color = ray_color(&r, &scene.background_color, &scene.objects, scene.lights.clone(), MAX_DEPTH);
+
+                    color = color + ray_color.min(1.0);
                 }
                 let rgb = color.return_color(samples);
 
@@ -116,7 +118,9 @@ pub fn render_scene(scene: &str, width: usize, height: usize, samples: usize) ->
                     let u = (x as f64 + util::random_double()) / width as f64;
                     let v = (y as f64 + util::random_double()) / height as f64;
                     let r = scene.camera.get_ray(u, v);
-                    color = color + ray_color(&r, &scene.background_color, &scene.objects, scene.lights.clone(), MAX_DEPTH);
+                    let ray_color = ray_color(&r, &scene.background_color, &scene.objects, scene.lights.clone(), MAX_DEPTH);
+
+                    color = color + ray_color.min(1.0);
                 }
                 let rgb = color.return_color(samples);
 

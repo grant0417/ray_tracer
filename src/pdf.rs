@@ -6,8 +6,8 @@ use std::sync::Arc;
 use crate::hittable::Hittable;
 
 pub trait Pdf {
-    fn value(&self, _direction: &Vec3) -> f64 { 0.0 }
-    fn generate(&self) -> Vec3 { Vec3::zero() }
+    fn value(&self, _direction: &Vec3) -> f64;
+    fn generate(&self) -> Vec3;
 }
 
 pub struct CosinePdf {

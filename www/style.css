@@ -1,0 +1,22 @@
+.loader {
+    border: 2em solid #f3f3f3; /* Light grey */
+    border-top: 2em solid #007bff; /* Blue */
+    border-radius: 50%;
+    width: 15em;
+    height: 15em;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
+.center-elements {
+    position: relative;
+    text-align: center;
+    color: white;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg) ; }
+    100% { transform:  translate(-50%, -50%) rotate(360deg); }
+}

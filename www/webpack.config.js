@@ -11,4 +11,13 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin(['index.html'])
   ],
-};
+  module: {
+    rules: [
+      {
+        test: /\.worker\.js$/,
+        use: { loader: 'worker-loader' },
+      }
+    ]
+  }
+}
+;

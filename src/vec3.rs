@@ -43,6 +43,7 @@ impl Vec3 {
 
     pub fn return_color(&self, samples_per_pixel: usize) -> (u8, u8, u8) {
         let scale = 1.0 / samples_per_pixel as f64;
+
         let v = self.scale(scale).sqrt();
 
         let mut r = v.x();
@@ -91,6 +92,13 @@ impl Vec3 {
         Vec3 { v: self.v.normalize() }
     }
 
+    pub fn max(&self, val: f64) -> Self {
+        Vec3::new(self.x().max(val), self.y().max(val), self.z().max(val))
+    }
+
+    pub fn min(&self, val: f64) -> Self {
+        Vec3::new(self.x().min(val), self.y().min(val), self.z().min(val))
+    }
 
     pub fn random() -> Self {
         Vec3::new(random_double(), random_double(), random_double())

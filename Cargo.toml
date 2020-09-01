@@ -16,7 +16,7 @@ default = ["console_error_panic_hook"]
 rand = { version = "0.7.3", features = ["wasm-bindgen"] }
 rayon = "1.4.0"
 tobj = "1.0.0"
-nalgebra = "0.21.0"
+nalgebra = "0.22.0"
 indicatif = {version = "0.14.0", features = ["with_rayon"]}
 image = "0.23.4"
 clap = "2.33.1"

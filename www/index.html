@@ -4,19 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rust Ray Tracer</title>
+    <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
   </head>
   <body class="bg-dark">
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.<br></noscript>
 
-    <div class="container-fluid">
+    <div class="container">
       <div class="input-group my-2">
         <div class="input-group-prepend">
           <label class="input-group-text" for="scene">Scene</label>
         </div>
         <select name="scene" id="scene" class="custom-select" style="min-width: 14em;">
         </select>
+      </div>
+    </div>
 
+    <div class="container">
+      <div class="input-group my-2">
         <div class="input-group-prepend">
           <label class="input-group-text" for="width">Width</label>
         </div>
@@ -33,13 +38,14 @@
         <input type="number" id="samples" name="samples" class="form-control" style="min-width: 3em;" value="4">
 
         <div class="input-group-append">
-          <input type="button" id="render-button" class="btn btn-primary" value="Render">
+          <input type="button" id="render-button" class="btn btn-primary" style="min-width: 5em;" value="Render">
         </div>
       </div>
       <canvas width="1000" height="1" id="progress" style="width: 100%; height: 1em; border-radius: .35em;"></canvas>
     </div>
 
-    <div class="container my-1">
+    <div class="container center-elements my-1">
+      <div id="loader"></div>
       <canvas id="render-canvas" class="border" style="width: 100%; max-height: 70%;"></canvas>
     </div>
 
