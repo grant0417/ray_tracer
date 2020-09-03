@@ -1,4 +1,5 @@
 # Ray Tracer
+# [Demo](https://rust-ray-tracer.netlify.app/)
 
 ![Cornell Box](imgs/cornell.png)
 *Rendered at 1280x1280 with 4096 samples/pixel in 01:19:34 on a Ryzen R7 2700x.*
