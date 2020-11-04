@@ -6,8 +6,7 @@
 
 ## About
 
-A basic ray tracer that is based on [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
-but in Rust.
+A basic ray tracer built in Rust that also runs on the web.
 
 Some features include:
  * Parallel execution of ray tracing
@@ -20,8 +19,6 @@ Here are some more images from the ray tracer:
 
   
 ![Utah Teapot and Stanford Dragon](imgs/objs.png)
-  
-![Lots of Balls](imgs/image.png)
 
 ## How to use
 
